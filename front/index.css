@@ -1,38 +1,65 @@
-body{
-    margin: 0;
-}
-.container{
-    display: flex;
-}
-
-.navbar{
-    width: 300px;
-    background-color: aqua;
+@font-face {
+  font-family: "kara";
+  src: url("fonts/SGKara-Light.ttf") format("ttf");
+  font-weight: normal;
+  font-style: normal;
 }
 
-.main{
-    width: calc(100% - 300px);
+body {
+  margin: 0;
+  font-family: "kara";
 }
 
-.nav-container{
-    position: relative;
-    width: 100%;
-    height: 60px;
-    
+.container {
+  display: flex;
+  height: 100%;
 }
 
-.left{
+.right-panel {
+  width: 300px;
+  height: 100%;
+  background-color: aqua;
+}
+
+.right-panel-header{
+  height: 60px;
+}
+
+.right-panel-menu{
+  height: calc(100% - 60px);
+}
+
+.main {
+  width: calc(100% - 300px);
+}
+
+.nav-container {
+  display: flex;
+  width: 100%;
+  height: 60px;
+  align-items: center;
+}
+
+/* .left{
     position: absolute;
     left: 0;
     height: 100%;
     align-items: center;
     display: flex;
+} */
+.current-menu {
+  margin: 8px;
 }
 
-.right{
-    position: absolute;
-    right: 0;
-    display: flex;
-    height: 100%;
-    align-items: center;
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+.icon {
+  width: 25px;
+  height: 25px;
+  margin: 8px;
+  background-image: url("./icons/inventory.svg");
+  background-size: cover;
+  color: black;
 }
