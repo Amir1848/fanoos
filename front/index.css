@@ -1,6 +1,6 @@
 @font-face {
-  font-family: "kara";
-  src: url("fonts/SGKara-Light.ttf") format("ttf");
+  font-family: 'kara';
+  src: url('fonts/SGKara-Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
@@ -18,10 +18,27 @@ body {
 .right-panel {
   width: 300px;
   height: 100%;
-  background-color: aqua;
+  background-color: #202634;
 }
 
 .right-panel-header{
+  height: 60px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 2px 0 0 #1f2533;
+}
+
+.icon-status-menu{
+  color: white;
+  background-image: url("./icons/arrow-left.svg");
+  position: absolute;
+  left: 0px;
+}
+
+.main-panel-header{
   height: 60px;
 }
 
@@ -29,7 +46,12 @@ body {
   height: calc(100% - 60px);
 }
 
-.main {
+.main-panel-content{
+  height: calc(100% - 60px);
+  background-color: #f1f1f1;
+}
+
+.main-panel {
   width: calc(100% - 300px);
 }
 
@@ -40,13 +62,6 @@ body {
   align-items: center;
 }
 
-/* .left{
-    position: absolute;
-    left: 0;
-    height: 100%;
-    align-items: center;
-    display: flex;
-} */
 .current-menu {
   margin: 8px;
 }
@@ -59,7 +74,28 @@ body {
   width: 25px;
   height: 25px;
   margin: 8px;
-  background-image: url("./icons/inventory.svg");
   background-size: cover;
   color: black;
+}
+
+.icon-inv{
+  background-image: url("./icons/inventory.svg");
+}
+
+.icon-menu{
+  background-image: url("./icons/menu.svg");
+}
+
+.menu-buton-container{
+  display: flex;
+  width: 50px;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid #f1f1f1;
+}
+
+button.icon {
+  border: none;
+  background-color: transparent;
 }
