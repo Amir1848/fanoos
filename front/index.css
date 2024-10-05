@@ -42,13 +42,14 @@ body {
   height: 60px;
 }
 
-.right-panel-menu{
+#right-panel-menu{
   height: calc(100% - 60px);
 }
 
-.main-panel-content{
+#main-panel-content{
   height: calc(100% - 60px);
   background-color: #f1f1f1;
+  padding: 25px;
 }
 
 .main-panel {
@@ -98,4 +99,73 @@ body {
 button.icon {
   border: none;
   background-color: transparent;
+}
+
+.menu-item-container{
+  height: 60px;
+  padding: 0 25px;
+  display: flex;
+  align-items: center;
+  color: white;
+}
+
+.menu-item-icon-container{
+  display: flex;
+}
+
+.menu-item-icon-container i {
+  width: 25px;
+  height: 25px;
+  margin: 8px;
+}
+
+
+#main-panel-menu{
+  margin: 4px;
+}
+
+#system-logo{
+  width: 300px;
+  height: 59px;
+  position: absolute;
+  bottom: 0;
+  background-image: url(./assets/icon.png);
+  background-position: center;
+  background-size: contain;
+}
+
+.section{
+  padding: 10px;
+}
+
+.section-header{
+  margin: 2px;
+}
+
+.section-item-cotainer{
+  display: flex;
+}
+
+.main-panel-item{
+  padding: 30px;
+  border: 1px solid #1f2533;
+  border-radius: 7px;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-panel-item:nth-child(even) {
+  margin: 0 20px;
+}
+
+.main-panel-item i {
+  font-size: 50px;
+  padding: 10px;
+}
+
+.main-panel-item p {
+  margin: 0;
 }
