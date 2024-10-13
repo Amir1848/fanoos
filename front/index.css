@@ -1,6 +1,6 @@
 @font-face {
-  font-family: 'kara';
-  src: url('fonts/SGKara-Regular.ttf') format('truetype');
+  font-family: "kara";
+  src: url("fonts/SGKara-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -21,7 +21,7 @@ body {
   background-color: #202634;
 }
 
-.right-panel-header{
+.right-panel-header {
   height: 60px;
   color: white;
   display: flex;
@@ -31,22 +31,22 @@ body {
   box-shadow: 0 2px 0 0 #1f2533;
 }
 
-.icon-status-menu{
+.icon-status-menu {
   color: white;
   background-image: url("./icons/arrow-left.svg");
   position: absolute;
   left: 0px;
 }
 
-.main-panel-header{
+.main-panel-header {
   height: 60px;
 }
 
-#right-panel-menu{
+#right-panel-menu {
   height: calc(100% - 60px);
 }
 
-#main-panel-content{
+#main-panel-content {
   height: calc(100% - 60px);
   background-color: #f1f1f1;
   padding: 25px;
@@ -79,15 +79,15 @@ body {
   color: black;
 }
 
-.icon-inv{
+.icon-inv {
   background-image: url("./icons/inventory.svg");
 }
 
-.icon-menu{
+.icon-menu {
   background-image: url("./icons/menu.svg");
 }
 
-.menu-buton-container{
+.menu-buton-container {
   display: flex;
   width: 50px;
   height: 100%;
@@ -101,7 +101,7 @@ button.icon {
   background-color: transparent;
 }
 
-.menu-item-container{
+.menu-item-container {
   height: 60px;
   padding: 0 25px;
   display: flex;
@@ -109,7 +109,7 @@ button.icon {
   color: white;
 }
 
-.menu-item-icon-container{
+.menu-item-icon-container {
   display: flex;
 }
 
@@ -119,12 +119,11 @@ button.icon {
   margin: 8px;
 }
 
-
-#main-panel-menu{
+#main-panel-menu {
   margin: 4px;
 }
 
-#system-logo{
+#system-logo {
   width: 300px;
   height: 59px;
   position: absolute;
@@ -134,19 +133,19 @@ button.icon {
   background-size: contain;
 }
 
-.section{
+.section {
   padding: 10px;
 }
 
-.section-header{
+.section-header {
   margin: 2px;
 }
 
-.section-item-cotainer{
+.section-item-cotainer {
   display: flex;
 }
 
-.main-panel-item{
+.main-panel-item {
   padding: 30px;
   border: 1px solid #1f2533;
   border-radius: 7px;
@@ -167,5 +166,10 @@ button.icon {
 }
 
 .main-panel-item p {
+  margin: 0;
+}
+
+.form-header,
+.form-detail {
   margin: 0;
 }
