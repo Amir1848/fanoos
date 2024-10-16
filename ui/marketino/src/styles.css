@@ -1,3 +1,4 @@
+
 @font-face {
     font-family: "kara";
     src: url("./assets/fonts/SGKara-Regular.ttf") format("truetype");
@@ -50,6 +51,7 @@
     height: calc(100% - 60px);
     background-color: #f1f1f1;
     padding: 25px;
+    box-sizing: border-box;
   }
   
   .main-panel {

@@ -1,5 +1,12 @@
 <div>
-    <h2 class="form-header">کاربران</h2>
-    <p class="form-detail">لیست کاربران بشرح زیر میباشد</p>
+  <h2 class="form-header">کاربران</h2>
+  <p class="form-detail">لیست کاربران بشرح زیر میباشد</p>
 </div>
-<div></div>
+<!-- <div class="panel"> -->
+<ag-grid-angular
+  class="ag-theme-quartz"
+  style="height: 500px;"
+  [rowData]="rowData"
+  [columnDefs]="colDefs"
+/>
+<!-- </div> -->
