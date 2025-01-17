@@ -15,7 +15,12 @@
   margin: 20px 0;
 }
 
-.import-export-panel button {
-  display: inline;
-  margin: 10px;
+.add-new {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.user-header {
+  position: relative;
 }

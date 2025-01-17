@@ -11,14 +11,17 @@
       آپلود
     </button>
   </div>
+  <div class="add-new">
+    <button mat-fab extended color="primary" (click)="change()">
+      <mat-icon>add</mat-icon>
+      افزودن کاربر
+    </button>
+  </div>
 </div>
-<!-- <div class="panel"> -->
+
 <ag-grid-angular
   class="ag-theme-quartz"
   style="height: 500px;"
   [rowData]="rowData"
   [columnDefs]="colDefs"
 />
-<!-- </div> -->
-
-<button (click)="change()">ss</button>
