@@ -35,6 +35,7 @@
               "src/assets"
             ],
             "styles": [
+              "src/custom-theme.scss",
               "src/styles.css",
               "node_modules/ag-grid-community/styles/ag-grid.css",
               "node_modules/ag-grid-community/styles/ag-theme-quartz.css"
@@ -57,7 +58,7 @@
               ],
               "outputHashing": "all"
             },
-            "development": {
+            "devespment": {
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
@@ -75,7 +76,11 @@
               "buildTarget": "marketino:build:development"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "production",
+          "options": {
+            "port": 4201,
+            "host": "0.0.0.0"
+          }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",

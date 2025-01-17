@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { ColDef } from 'ag-grid-community';
+import { CreateUserComponent } from './create-user/create-user.component';
+
 
 
 @Component({
@@ -20,4 +23,17 @@ export class UsersComponent {
     { field: "price", flex: 1 },
     { field: "electric", flex: 1 }
   ];
+
+  constructor(public dialog: MatDialog){
+
+  }
+
+  change(){
+    let dialogRef = this.dialog.open(CreateUserComponent, {
+      height: '400px',
+      width: '800px',
+    });
+
+    
+  }
 }

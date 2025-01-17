@@ -6,19 +6,35 @@ import { AppComponent } from './app.component';
 import { SideBarComponent } from './side-bar/side-bar.component';
 import { UsersComponent } from './users/users.component';
 import { AgGridAngular } from 'ag-grid-angular';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatDialogModule } from '@angular/material/dialog';
+import { CreateUserComponent } from './users/create-user/create-user.component';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatSelectModule} from '@angular/material/select';
+import {MatInputModule} from '@angular/material/input';
+import { ReactiveFormsModule } from '@angular/forms';
+
 
 @NgModule({
   declarations: [
     AppComponent,
     SideBarComponent,
-    UsersComponent
+    UsersComponent,
+    CreateUserComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    AgGridAngular
+    ReactiveFormsModule,
+    AgGridAngular,
+    MatSlideToggleModule,
+    MatDialogModule,
+    MatFormFieldModule,MatInputModule, MatSelectModule
   ],
-  providers: [],
+  providers: [
+    provideAnimationsAsync()
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
