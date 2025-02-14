@@ -1,4 +1,4 @@
-package utils
+package dbutils
 
 import (
 	"fmt"
@@ -11,18 +11,21 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-var DB *gorm.DB // Global DB instance
+var DB *gorm.DB
 
-// InitDB initializes the database connection
-func InitDB() {
+func init() {
+	initDB()
+}
+
+func initDB() {
 	var err error
 
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Tehran",
 		getEnv("DB_HOST", "localhost"),
 		getEnv("DB_USER", "postgres"),
-		getEnv("DB_PASSWORD", "password"),
-		getEnv("DB_NAME", "mydb"),
+		getEnv("DB_PASSWORD", "postgres"),
+		getEnv("DB_NAME", "marketino"),
 		getEnv("DB_PORT", "5432"),
 	)
 
@@ -48,6 +51,26 @@ func InitDB() {
 
 func GetDB() *gorm.DB {
 	return DB
+}
+
+func Transaction(txFunc func(tx *gorm.DB) error) error {
+	tx := GetDB().Begin()
+
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	err := txFunc(tx)
+
+	if err != nil {
+		tx.Rollback()
+		log.Println("Transaction rolled back due to error:", err)
+		return err
+	}
+
+	tx.Commit()
+	log.Println("Transaction committed successfully")
+	return nil
 }
 
 func getEnv(key, fallback string) string {

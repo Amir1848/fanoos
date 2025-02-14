@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/amir1848/marketino/internal/app"
+	_ "github.com/amir1848/marketino/utils/dbutils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,5 +36,5 @@ func main() {
 		})
 	}
 
-	r.Run(":8080")
+	r.Run(":3000")
 }
