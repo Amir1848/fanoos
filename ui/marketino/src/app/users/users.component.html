@@ -18,11 +18,8 @@
     </button>
   </div>
 </div>
-
-<ag-grid-angular
-  class="ag-theme-quartz"
-  style="height: 500px;"
-  [rowData]="rowData"
-  [columnDefs]="colDefs"
-  [enableRtl]="true"
-/>
+<app-remote-data-grid
+  [colDefs]="colDefs"
+  dataviewKey="all-users"
+>
+</app-remote-data-grid>

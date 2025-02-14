@@ -16,6 +16,8 @@ import {MatInputModule} from '@angular/material/input';
 import { ReactiveFormsModule } from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
+import { RemoteDataGridComponent } from './component/remote-data-grid/remote-data-grid.component';
+import { HttpClientModule } from '@angular/common/http';
 
 
 
@@ -24,10 +26,12 @@ import {MatIconModule} from '@angular/material/icon';
     AppComponent,
     SideBarComponent,
     UsersComponent,
-    CreateUserComponent
+    CreateUserComponent,
+    RemoteDataGridComponent
   ],
   imports: [
     BrowserModule,
+    HttpClientModule,
     AppRoutingModule,
     ReactiveFormsModule,
     AgGridAngular,
