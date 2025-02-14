@@ -11,6 +11,8 @@ type User struct {
 	FirstName   string
 	LastName    string
 	FullName    string
+	Password    string `gorm:"column:password_c"`
+	IsAdmin     bool
 	Email       sql.NullString
 	PhoneNumber sql.NullString
 	UpdatedAt   time.Time
@@ -23,5 +25,6 @@ type UserSaveDTO struct {
 	LastName    string
 	Email       string
 	PhoneNumber string
+	IsAdmin     bool
 	UpdatedAt   time.Time
 }

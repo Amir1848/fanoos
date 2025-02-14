@@ -5,6 +5,8 @@ CREATE TABLE users (
     last_name VARCHAR(50) NOT NULL,
     full_name VARCHAR(101) NOT NULL,
     email VARCHAR(100) NULL,
+    password_c VARCHAR(500),
+    is_admin BOOLEAN,
     phone_number VARCHAR(100) NULL,
     updated_at TIMESTAMP
 );

@@ -24,7 +24,11 @@ export class RemoteDataGridComponent implements OnInit {
     
   }
 
-  ngOnInit(): void {
+  refresh(){
+    this.updateRemoteData()
+  }
+
+  updateRemoteData(){
     this.httpClient.post<[]>(`/api/dataviews/${this.dataviewKey}`, {
       pageNumber: 1,
       pageSize: 1000,
@@ -32,5 +36,9 @@ export class RemoteDataGridComponent implements OnInit {
     }).subscribe(p => {
       this.rowData = p
     })
+  }
+
+  ngOnInit(): void {
+   this.updateRemoteData()
   }
 }

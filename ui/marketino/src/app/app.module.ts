@@ -18,7 +18,7 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import { RemoteDataGridComponent } from './component/remote-data-grid/remote-data-grid.component';
 import { HttpClientModule } from '@angular/common/http';
-
+import {MatCheckboxModule} from '@angular/material/checkbox'
 
 
 @NgModule({
@@ -34,6 +34,7 @@ import { HttpClientModule } from '@angular/common/http';
     HttpClientModule,
     AppRoutingModule,
     ReactiveFormsModule,
+    MatCheckboxModule,
     AgGridAngular,
     MatSlideToggleModule,
     MatDialogModule,

@@ -9,7 +9,7 @@ import (
 
 func RegisterRoutes(router *gin.RouterGroup) {
 	g := router.Group("/users")
-	
+
 	g.POST("/create", createUser)
 }
 
@@ -28,6 +28,7 @@ func createUser(ctx *gin.Context) {
 		UserName:    user.UserName,
 		FirstName:   user.FirstName,
 		LastName:    user.LastName,
+		IsAdmin:     user.IsAdmin,
 		FullName:    user.FirstName + " " + user.LastName,
 		Email:       convertutils.ToNullString(user.Email),
 		PhoneNumber: convertutils.ToNullString(user.PhoneNumber),
