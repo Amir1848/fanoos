@@ -15,6 +15,7 @@ func main() {
 	api := r.Group("/api")
 	{
 		app.RegisterRoutes(api)
+		app.RegisterDataviews(api)
 	}
 
 	if true { //check with env

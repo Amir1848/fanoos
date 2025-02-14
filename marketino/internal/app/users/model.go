@@ -15,3 +15,13 @@ type User struct {
 	PhoneNumber sql.NullString
 	UpdatedAt   time.Time
 }
+
+type UserSaveDTO struct {
+	ID          int64
+	UserName    string
+	FirstName   string
+	LastName    string
+	Email       string
+	PhoneNumber string
+	UpdatedAt   time.Time
+}
