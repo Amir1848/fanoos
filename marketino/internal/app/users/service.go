@@ -3,10 +3,15 @@ package users
 import (
 	"context"
 
+	"github.com/amir1848/marketino/internal/app/auth"
 	"github.com/amir1848/marketino/utils/dbutils"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
+
+func init() {
+	auth.RegisterGetUserData(getUser)
+}
 
 func CreateUser(ctx context.Context, user *User) (int64, error) {
 	var userID int64
@@ -60,4 +65,13 @@ func HashPassword(password string) (string, error) {
 	}
 
 	return string(hashed), nil
+}
+
+func getUser(ctx context.Context, username string) (hashedPassword string, found bool, err error) {
+	db := dbutils.GetDB()
+
+	user := User{}
+	fetchResult := db.Model(User{}).Where(User{UserName: username}).Scan(&user)
+
+	return user.Password, fetchResult.RowsAffected == 1, fetchResult.Error
 }

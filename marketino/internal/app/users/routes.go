@@ -29,6 +29,7 @@ func createUser(ctx *gin.Context) {
 		FirstName:   user.FirstName,
 		LastName:    user.LastName,
 		IsAdmin:     user.IsAdmin,
+		Password:    user.Password,
 		FullName:    user.FirstName + " " + user.LastName,
 		Email:       convertutils.ToNullString(user.Email),
 		PhoneNumber: convertutils.ToNullString(user.PhoneNumber),

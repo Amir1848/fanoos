@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { AgGridAngular } from 'ag-grid-angular';
 
 @Component({
   selector: 'app-remote-data-grid',
@@ -16,6 +17,9 @@ export class RemoteDataGridComponent implements OnInit {
   @Input()
   parameters: any;
 
+  @ViewChild("grd") 
+  grid!: AgGridAngular;
+
   rowData: [] = [];
 
   constructor(
@@ -29,7 +33,7 @@ export class RemoteDataGridComponent implements OnInit {
   }
 
   updateRemoteData(){
-    this.httpClient.post<[]>(`/api/dataviews/${this.dataviewKey}`, {
+    return this.httpClient.post<[]>(`/api/dataviews/${this.dataviewKey}`, {
       pageNumber: 1,
       pageSize: 1000,
       parameters: this.parameters

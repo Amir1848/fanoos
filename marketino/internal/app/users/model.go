@@ -25,6 +25,7 @@ type UserSaveDTO struct {
 	LastName    string
 	Email       string
 	PhoneNumber string
+	Password    string 
 	IsAdmin     bool
 	UpdatedAt   time.Time
 }
