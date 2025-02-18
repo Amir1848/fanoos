@@ -1,10 +1,15 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { UsersComponent } from './users/users.component';
+import { GeneralMenuComponent } from './general/general-menu/general-menu.component';
 
 const routes: Routes = [
   {
-    path: 'users',
+    path: 'general',
+    component: GeneralMenuComponent
+  },
+  {
+    path: 'general/users',
     component: UsersComponent
   }
 ];

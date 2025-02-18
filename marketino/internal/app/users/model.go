@@ -11,7 +11,7 @@ type User struct {
 	FirstName   string
 	LastName    string
 	FullName    string
-	Password    string `gorm:"column:password_c"`
+	Password    string `gorm:"column:password_c"` 
 	IsAdmin     bool
 	Email       sql.NullString
 	PhoneNumber sql.NullString

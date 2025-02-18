@@ -11,6 +11,7 @@ func RegisterRoutes(router *gin.RouterGroup) {
 	g := router.Group("/users")
 
 	g.POST("/create", createUser)
+	g.POST("/delete", deleteUsers)
 }
 
 func createUser(ctx *gin.Context) {
@@ -40,4 +41,23 @@ func createUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"id": userID})
+}
+
+func deleteUsers(ctx *gin.Context) {
+	c := ctx.Request.Context()
+
+	deleteIds := struct {
+		Ids []int64
+	}{}
+
+	if err := ctx.ShouldBindJSON(&deleteIds); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := DeleteUser(c, deleteIds.Ids)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 }

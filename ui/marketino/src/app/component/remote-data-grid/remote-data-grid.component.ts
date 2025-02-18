@@ -1,5 +1,6 @@
+import type {RowSelectionOptions} from 'ag-grid-community';
 import { HttpClient } from '@angular/common/http';
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 
 @Component({
@@ -10,6 +11,15 @@ import { AgGridAngular } from 'ag-grid-angular';
 export class RemoteDataGridComponent implements OnInit {
   @Input()
   dataviewKey: string = "";
+
+  @Input()
+  rowSelection: RowSelectionOptions<any> = {
+    mode: 'multiRow',
+    checkboxes: true,
+  }
+
+  @Output()
+  selectionChanged: EventEmitter<any[]> = new EventEmitter<any[]>() 
 
   @Input() 
   colDefs:  any[] = [];
@@ -44,5 +54,9 @@ export class RemoteDataGridComponent implements OnInit {
 
   ngOnInit(): void {
    this.updateRemoteData()
+  }
+
+  gridSelectionChanged(p: any){
+    this.selectionChanged.emit(p.api.getSelectedRows())
   }
 }

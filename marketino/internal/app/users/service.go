@@ -43,6 +43,22 @@ func CreateUser(ctx context.Context, user *User) (int64, error) {
 	return userID, nil
 }
 
+func DeleteUser(ctx context.Context, ids []int64) error {
+	err := dbutils.Transaction(func(tx *gorm.DB) error {
+		err := tx.Exec(`DELETE FROM users WHERE id IN (?)`, ids).Error
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func validateUser(ctx context.Context, user *User) error {
 	return nil
 }

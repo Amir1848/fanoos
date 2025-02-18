@@ -6,9 +6,13 @@
       <i class="fa fa-cloud-download" aria-hidden="true"></i>
       دانلود
     </button>
-    <button  mat-button>
+    <!-- <button  mat-button>
       <i class="fa fa-cloud-upload" aria-hidden="true"></i>
       آپلود
+    </button> -->
+    <button mat-button *ngIf="(selectedRows.length > 0)" (click)="delete()">
+      <i class="fa fa-trash" aria-hidden="true"></i>
+      حذف
     </button>
   </div>
   <div class="add-new">
@@ -22,5 +26,6 @@
   #grid
   [colDefs]="colDefs"
   dataviewKey="all-users"
+  (selectionChanged)="selectionChange($event)"
 >
 </app-remote-data-grid>

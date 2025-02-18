@@ -58,7 +58,7 @@
               ],
               "outputHashing": "all"
             },
-            "devespment": {
+            "development": {
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
@@ -76,7 +76,7 @@
               "buildTarget": "marketino:build:development"
             }
           },
-          "defaultConfiguration": "production",
+          "defaultConfiguration": "development",
           "options": {
             "port": 4201,
             "host": "0.0.0.0"
