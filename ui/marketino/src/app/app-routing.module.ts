@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { UsersComponent } from './users/users.component';
-import { GeneralMenuComponent } from './general/general-menu/general-menu.component';
+import { GeneralMenuComponent } from './general-menu/general-menu.component';
 import { LoginComponent } from './login/login.component';
 import { ShellComponent } from './shell/shell.component';
 

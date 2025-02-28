@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { MarketinoTitleService } from '../../services/marketino-title-service';
+import { MarketinoTitleService } from '../services/marketino-title-service';
 
 @Component({
   selector: 'app-general-menu',
