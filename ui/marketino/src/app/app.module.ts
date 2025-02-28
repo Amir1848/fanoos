@@ -19,7 +19,9 @@ import {MatIconModule} from '@angular/material/icon';
 import { RemoteDataGridComponent } from './component/remote-data-grid/remote-data-grid.component';
 import { HttpClientModule } from '@angular/common/http';
 import {MatCheckboxModule} from '@angular/material/checkbox';
-import { GeneralMenuComponent } from './general/general-menu/general-menu.component'
+import { GeneralMenuComponent } from './general/general-menu/general-menu.component';
+import { LoginComponent } from './login/login.component';
+import { ShellComponent } from './shell/shell.component'
 
 
 @NgModule({
@@ -29,7 +31,9 @@ import { GeneralMenuComponent } from './general/general-menu/general-menu.compon
     UsersComponent,
     CreateUserComponent,
     RemoteDataGridComponent,
-    GeneralMenuComponent
+    GeneralMenuComponent,
+    LoginComponent,
+    ShellComponent
   ],
   imports: [
     BrowserModule,

@@ -2,15 +2,27 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { UsersComponent } from './users/users.component';
 import { GeneralMenuComponent } from './general/general-menu/general-menu.component';
+import { LoginComponent } from './login/login.component';
+import { ShellComponent } from './shell/shell.component';
 
 const routes: Routes = [
   {
-    path: 'general',
-    component: GeneralMenuComponent
+    path: 'login',
+    component: LoginComponent
   },
   {
-    path: 'general/users',
-    component: UsersComponent
+    path: '',
+    component: ShellComponent,
+    children: [
+      {
+        path: 'general',
+        component: GeneralMenuComponent
+      },
+      {
+        path: 'general/users',
+        component: UsersComponent
+      }
+    ]
   }
 ];
 
