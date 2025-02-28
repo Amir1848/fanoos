@@ -17,12 +17,13 @@ import { ReactiveFormsModule } from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import { RemoteDataGridComponent } from './component/remote-data-grid/remote-data-grid.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import { GeneralMenuComponent } from './general-menu/general-menu.component';
 import { LoginComponent } from './login/login.component';
 import {MatCardModule} from '@angular/material/card';
 import { ShellComponent } from './shell/shell.component'
+import { AuthInterceptor } from './interceptors/auth.interceptor';
 
 
 @NgModule({
@@ -53,6 +54,11 @@ import { ShellComponent } from './shell/shell.component'
     MatIconModule
   ],
   providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    },
     provideAnimationsAsync()
   ],
   bootstrap: [AppComponent]
