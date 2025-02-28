@@ -21,6 +21,7 @@ import { HttpClientModule } from '@angular/common/http';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import { GeneralMenuComponent } from './general/general-menu/general-menu.component';
 import { LoginComponent } from './login/login.component';
+import {MatCardModule} from '@angular/material/card';
 import { ShellComponent } from './shell/shell.component'
 
 
@@ -47,6 +48,7 @@ import { ShellComponent } from './shell/shell.component'
     MatFormFieldModule,
     MatInputModule, 
     MatSelectModule,
+    MatCardModule,
     MatButtonModule,
     MatIconModule
   ],

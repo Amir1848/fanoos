@@ -117,6 +117,10 @@
   #main-panel-menu {
     margin: 4px;
   }
+
+  .logo {
+    background-image: url(./assets/icon.png);
+  }
   
   #system-logo {
     width: 300px;
@@ -471,4 +475,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 a {
   color: inherit;
   text-decoration: inherit;
+}
+
+.login-background{
+    background-color: rgba(32,38,52,255);
 }
