@@ -1,0 +1,111 @@
+<div class="table-card card">
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="select-col">
+            <label class="checkbox">
+              <input
+                type="checkbox"
+                [checked]="allSelected()"
+                (change)="toggleAll($any($event.target).checked)"
+                [disabled]="rows().length === 0"
+                aria-label="انتخاب همه"
+              />
+            </label>
+          </th>
+          @for (col of columns(); track col.key) {
+            <th [style.width]="col.width || null">{{ col.header }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr class="state-row">
+            <td [attr.colspan]="columns().length + 1">
+              <div class="state-cell">
+                <span class="spinner spinner-dark"></span>
+                در حال بارگذاری…
+              </div>
+            </td>
+          </tr>
+        } @else if (rows().length === 0) {
+          <tr class="state-row">
+            <td [attr.colspan]="columns().length + 1">
+              <div class="state-cell empty">موردی برای نمایش وجود ندارد</div>
+            </td>
+          </tr>
+        } @else {
+          @for (row of rows(); track row.id) {
+            <tr
+              class="data-row"
+              [class.selected]="selected().has(row.id)"
+              (click)="rowOpen.emit(row)"
+            >
+              <td class="select-col" (click)="$event.stopPropagation()">
+                <label class="checkbox">
+                  <input
+                    type="checkbox"
+                    [checked]="selected().has(row.id)"
+                    (change)="toggleRow(row, $any($event.target).checked)"
+                    aria-label="انتخاب ردیف"
+                  />
+                </label>
+              </td>
+              @for (col of columns(); track col.key) {
+                <td [class.ltr]="col.ltr">
+                  @if (col.type === 'boolean') {
+                    <span class="badge" [class.badge-green]="!!cellValue(row, col)" [class.badge-gray]="!cellValue(row, col)">
+                      {{ booleanLabel(cellValue(row, col), col) }}
+                    </span>
+                  } @else {
+                    {{ cellValue(row, col) ?? '—' }}
+                  }
+                </td>
+              }
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-footer">
+    <div class="page-size">
+      <span class="text-secondary">تعداد در صفحه:</span>
+      <select
+        class="control"
+        [value]="pageSize()"
+        (change)="pageSizeChange.emit(+$any($event.target).value)"
+      >
+        @for (size of pageSizes; track size) {
+          <option [value]="size">{{ size | number }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="pager">
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [disabled]="page() <= 1 || loading()"
+        (click)="pageChange.emit(page() - 1)"
+        title="صفحه قبل"
+      >
+        <app-icon name="chevron-right" [size]="16" />
+        قبلی
+      </button>
+      <span class="page-indicator">صفحه {{ page() | number }}</span>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [disabled]="!hasNext() || loading()"
+        (click)="pageChange.emit(page() + 1)"
+        title="صفحه بعد"
+      >
+        بعدی
+        <app-icon name="chevron-left" [size]="16" />
+      </button>
+    </div>
+  </div>
+</div>

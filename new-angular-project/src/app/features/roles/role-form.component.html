@@ -1,0 +1,81 @@
+<div class="page-header">
+  <h2 class="page-title">
+    @if (isNew()) {
+      نقش جدید
+      <span class="page-subtitle">تعریف نقش کاربری در سامانه</span>
+    } @else {
+      مشاهده نقش
+      @if (role(); as r) {
+        <span class="page-subtitle">{{ r.title }}</span>
+      }
+    }
+  </h2>
+  <div class="page-actions">
+    <button type="button" class="btn btn-outline" (click)="back()">
+      <app-icon name="back" [size]="16" />
+      بازگشت
+    </button>
+    @if (!isNew() && role()) {
+      <button type="button" class="btn btn-danger" (click)="deleteRole()">
+        <app-icon name="trash" [size]="16" />
+        حذف نقش
+      </button>
+    }
+    @if (isNew()) {
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
+        @if (saving()) {
+          <span class="spinner"></span>
+        } @else {
+          <app-icon name="save" [size]="16" />
+        }
+        ذخیره
+      </button>
+    }
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="card form-state">
+    <span class="spinner spinner-dark"></span>
+    در حال بارگذاری اطلاعات نقش…
+  </div>
+} @else if (notFound()) {
+  <div class="card form-state">نقش موردنظر یافت نشد</div>
+} @else {
+  <form class="card entity-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="title">عنوان نقش@if (isNew()) {<span class="req">*</span>}</label>
+        <input
+          id="title"
+          type="text"
+          class="control"
+          formControlName="title"
+          [class.invalid]="invalid('title')"
+        />
+        <div class="field-error">
+          @if (invalid('title')) {
+            وارد کردن عنوان نقش الزامی است
+          }
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="code">کد نقش@if (isNew()) {<span class="req">*</span>}</label>
+        <input
+          id="code"
+          type="text"
+          class="control ltr"
+          formControlName="code"
+          [class.invalid]="invalid('code')"
+          autocomplete="off"
+        />
+        <div class="field-error">
+          @if (invalid('code')) {
+            وارد کردن کد نقش الزامی است
+          }
+        </div>
+      </div>
+    </div>
+  </form>
+}

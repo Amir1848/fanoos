@@ -1,0 +1,62 @@
+<div class="shell" [class.collapsed]="collapsed()">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">م</div>
+      @if (!collapsed()) {
+        <span class="brand-name">مارکتینو</span>
+      }
+    </div>
+
+    <nav class="sidebar-nav">
+      @for (item of navItems; track item.link) {
+        <a
+          class="nav-item"
+          [routerLink]="item.link"
+          routerLinkActive="active"
+          [title]="collapsed() ? item.label : ''"
+        >
+          <app-icon [name]="item.icon" [size]="20" />
+          @if (!collapsed()) {
+            <span>{{ item.label }}</span>
+          }
+        </a>
+      }
+    </nav>
+
+    <button
+      type="button"
+      class="sidebar-collapse"
+      (click)="toggleSidebar()"
+      [title]="collapsed() ? 'باز کردن منو' : 'جمع کردن منو'"
+    >
+      <app-icon [name]="collapsed() ? 'chevron-left' : 'chevron-right'" [size]="18" />
+      @if (!collapsed()) {
+        <span>جمع کردن منو</span>
+      }
+    </button>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <button type="button" class="btn btn-ghost topbar-menu" (click)="toggleSidebar()" title="منو">
+        <app-icon name="menu" [size]="20" />
+      </button>
+
+      <div class="topbar-spacer"></div>
+
+      <div class="topbar-user">
+        <div class="user-avatar">
+          <app-icon name="user" [size]="16" />
+        </div>
+        <span class="user-name ltr">{{ auth.username() }}</span>
+        <button type="button" class="btn btn-ghost" (click)="logout()" title="خروج از سامانه">
+          <app-icon name="logout" [size]="18" />
+        </button>
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

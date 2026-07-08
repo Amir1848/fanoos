@@ -1,0 +1,50 @@
+import { Component, inject, signal } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthService } from '../../core/auth/auth.service';
+import { ConfirmService } from '../../shared/confirm/confirm.service';
+import { IconComponent } from '../../shared/icon/icon.component';
+
+const SIDEBAR_KEY = 'marketino.sidebar-collapsed';
+
+interface NavItem {
+  label: string;
+  icon: string;
+  link: string;
+}
+
+@Component({
+  selector: 'app-shell',
+  standalone: true,
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent],
+  templateUrl: './shell.component.html',
+  styleUrl: './shell.component.scss',
+})
+export class ShellComponent {
+  readonly auth = inject(AuthService);
+  private readonly confirm = inject(ConfirmService);
+
+  readonly collapsed = signal(localStorage.getItem(SIDEBAR_KEY) === '1');
+
+  readonly navItems: NavItem[] = [
+    { label: 'داشبورد', icon: 'dashboard', link: '/dashboard' },
+    { label: 'کاربران', icon: 'users', link: '/users' },
+    { label: 'نقش‌ها', icon: 'shield', link: '/roles' },
+  ];
+
+  toggleSidebar(): void {
+    this.collapsed.update((v) => !v);
+    localStorage.setItem(SIDEBAR_KEY, this.collapsed() ? '1' : '0');
+  }
+
+  async logout(): Promise<void> {
+    const ok = await this.confirm.ask({
+      title: 'خروج از سامانه',
+      message: 'آیا می‌خواهید از حساب کاربری خود خارج شوید؟',
+      confirmText: 'خروج',
+    });
+
+    if (ok) {
+      this.auth.logout();
+    }
+  }
+}

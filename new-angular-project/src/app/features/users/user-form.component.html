@@ -1,0 +1,167 @@
+<div class="page-header">
+  <h2 class="page-title">
+    @if (isNew()) {
+      کاربر جدید
+      <span class="page-subtitle">ایجاد حساب کاربری در سامانه</span>
+    } @else {
+      مشاهده کاربر
+      @if (user(); as u) {
+        <span class="page-subtitle">{{ u.firstName }} {{ u.lastName }}</span>
+      }
+    }
+  </h2>
+  <div class="page-actions">
+    <button type="button" class="btn btn-outline" (click)="back()">
+      <app-icon name="back" [size]="16" />
+      بازگشت
+    </button>
+    @if (!isNew() && user()) {
+      <button type="button" class="btn btn-danger" (click)="deleteUser()">
+        <app-icon name="trash" [size]="16" />
+        حذف کاربر
+      </button>
+    }
+    @if (isNew()) {
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
+        @if (saving()) {
+          <span class="spinner"></span>
+        } @else {
+          <app-icon name="save" [size]="16" />
+        }
+        ذخیره
+      </button>
+    }
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="card form-state">
+    <span class="spinner spinner-dark"></span>
+    در حال بارگذاری اطلاعات کاربر…
+  </div>
+} @else if (notFound()) {
+  <div class="card form-state">کاربر موردنظر یافت نشد</div>
+} @else {
+  <form class="card entity-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="userName">نام کاربری@if (isNew()) {<span class="req">*</span>}</label>
+        <input
+          id="userName"
+          type="text"
+          class="control ltr"
+          formControlName="userName"
+          [class.invalid]="invalid('userName')"
+          autocomplete="off"
+        />
+        <div class="field-error">
+          @if (invalid('userName')) {
+            نام کاربری الزامی است (حداقل ۳ نویسه)
+          }
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="firstName">نام@if (isNew()) {<span class="req">*</span>}</label>
+        <input
+          id="firstName"
+          type="text"
+          class="control"
+          formControlName="firstName"
+          [class.invalid]="invalid('firstName')"
+        />
+        <div class="field-error">
+          @if (invalid('firstName')) {
+            وارد کردن نام الزامی است
+          }
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="lastName">نام خانوادگی@if (isNew()) {<span class="req">*</span>}</label>
+        <input
+          id="lastName"
+          type="text"
+          class="control"
+          formControlName="lastName"
+          [class.invalid]="invalid('lastName')"
+        />
+        <div class="field-error">
+          @if (invalid('lastName')) {
+            وارد کردن نام خانوادگی الزامی است
+          }
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="email">ایمیل</label>
+        <input
+          id="email"
+          type="email"
+          class="control ltr"
+          formControlName="email"
+          [class.invalid]="invalid('email')"
+          autocomplete="off"
+        />
+        <div class="field-error">
+          @if (invalid('email')) {
+            نشانی ایمیل معتبر نیست
+          }
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="phoneNumber">شماره تماس</label>
+        <input
+          id="phoneNumber"
+          type="tel"
+          class="control ltr"
+          formControlName="phoneNumber"
+          autocomplete="off"
+        />
+        <div class="field-error"></div>
+      </div>
+
+      @if (isNew()) {
+        <div class="form-field">
+          <label for="password">رمز عبور<span class="req">*</span></label>
+          <div class="password-wrap">
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              class="control ltr"
+              formControlName="password"
+              [class.invalid]="invalid('password')"
+              autocomplete="new-password"
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              (click)="showPassword.set(!showPassword())"
+              [attr.aria-label]="showPassword() ? 'پنهان کردن رمز' : 'نمایش رمز'"
+            >
+              <app-icon [name]="showPassword() ? 'eye-off' : 'eye'" [size]="16" />
+            </button>
+          </div>
+          <div class="field-error">
+            @if (invalid('password')) {
+              رمز عبور الزامی است (حداقل ۶ نویسه)
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="form-footer">
+      <label class="checkbox">
+        <input type="checkbox" formControlName="isAdmin" />
+        <span>دسترسی مدیر سیستم</span>
+      </label>
+      @if (!isNew() && user(); as u) {
+        <span class="badge" [class.badge-green]="u.isAdmin" [class.badge-gray]="!u.isAdmin">
+          {{ u.isAdmin ? 'مدیر سیستم' : 'کاربر عادی' }}
+        </span>
+      }
+    </div>
+  </form>
+}

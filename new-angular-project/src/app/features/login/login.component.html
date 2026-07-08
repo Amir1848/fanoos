@@ -1,0 +1,78 @@
+<div class="login-page">
+  <div class="login-panel card">
+    <div class="brand">
+      <div class="brand-logo">م</div>
+      <h1>مارکتینو</h1>
+      <p class="text-secondary">برای ورود به پنل مدیریت، اطلاعات کاربری خود را وارد کنید</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="form-field">
+        <label for="username">نام کاربری<span class="req">*</span></label>
+        <div class="input-wrap">
+          <app-icon name="user" [size]="16" />
+          <input
+            id="username"
+            type="text"
+            class="control"
+            formControlName="username"
+            [class.invalid]="invalid('username')"
+            autocomplete="username"
+            placeholder="نام کاربری"
+            dir="ltr"
+          />
+        </div>
+        <div class="field-error">
+          @if (invalid('username')) {
+            وارد کردن نام کاربری الزامی است
+          }
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="password">رمز عبور<span class="req">*</span></label>
+        <div class="input-wrap">
+          <app-icon name="lock" [size]="16" />
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            class="control"
+            formControlName="password"
+            [class.invalid]="invalid('password')"
+            autocomplete="current-password"
+            placeholder="••••••••"
+            dir="ltr"
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            (click)="showPassword.set(!showPassword())"
+            [attr.aria-label]="showPassword() ? 'پنهان کردن رمز' : 'نمایش رمز'"
+          >
+            <app-icon [name]="showPassword() ? 'eye-off' : 'eye'" [size]="16" />
+          </button>
+        </div>
+        <div class="field-error">
+          @if (invalid('password')) {
+            وارد کردن رمز عبور الزامی است
+          }
+        </div>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="login-error" role="alert">{{ errorMessage() }}</div>
+      }
+
+      <button type="submit" class="btn btn-primary login-submit" [disabled]="loading()">
+        @if (loading()) {
+          <span class="spinner"></span>
+          در حال ورود…
+        } @else {
+          ورود به سامانه
+        }
+      </button>
+    </form>
+  </div>
+
+  <p class="login-footer text-secondary">سامانه مدیریت مارکتینو</p>
+</div>

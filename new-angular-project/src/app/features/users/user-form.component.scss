@@ -1,0 +1,55 @@
+.entity-form {
+  padding: 24px;
+  max-width: 860px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 8px 20px;
+}
+
+.form-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.form-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px;
+  color: var(--text-secondary);
+  max-width: 860px;
+}
+
+.password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .toggle-password {
+    position: absolute;
+    inset-inline-end: 8px;
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    display: inline-flex;
+
+    &:hover {
+      color: var(--text);
+    }
+  }
+}
+
+input.control.ltr {
+  text-align: left;
+}

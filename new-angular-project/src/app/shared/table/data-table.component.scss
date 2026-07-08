@@ -1,0 +1,113 @@
+.table-card {
+  overflow: hidden;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th,
+  td {
+    text-align: start;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  thead th {
+    background: #f7f8fb;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+    position: sticky;
+    top: 0;
+    user-select: none;
+  }
+
+  .select-col {
+    width: 44px;
+    text-align: center;
+
+    .checkbox {
+      display: flex;
+      justify-content: center;
+    }
+  }
+
+  .data-row {
+    cursor: pointer;
+    transition: background 0.1s;
+
+    &:hover {
+      background: #f5f7ff;
+    }
+
+    &.selected {
+      background: var(--primary-light);
+    }
+  }
+}
+
+.state-row td {
+  padding: 0;
+}
+
+.state-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
+
+  &.empty {
+    color: var(--text-disabled);
+  }
+}
+
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  background: #fafbfd;
+  flex-wrap: wrap;
+}
+
+.page-size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+
+  select.control {
+    width: auto;
+    padding: 4px 8px;
+    font-size: 12.5px;
+  }
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .btn {
+    font-size: 12.5px;
+    padding: 5px 10px;
+  }
+}
+
+.page-indicator {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  min-width: 64px;
+  text-align: center;
+}

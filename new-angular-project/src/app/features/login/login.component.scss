@@ -1,0 +1,102 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  background:
+    radial-gradient(1000px 500px at 85% -10%, rgba(63, 81, 181, 0.18), transparent 60%),
+    radial-gradient(800px 400px at 10% 110%, rgba(0, 137, 123, 0.12), transparent 60%),
+    var(--bg);
+}
+
+.login-panel {
+  width: min(400px, 100%);
+  padding: 32px 28px 24px;
+}
+
+.brand {
+  text-align: center;
+  margin-bottom: 24px;
+
+  .brand-logo {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 12px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    font-size: 24px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-2);
+  }
+
+  h1 {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 12.5px;
+  }
+}
+
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  app-icon {
+    position: absolute;
+    inset-inline-start: 12px;
+    color: var(--text-disabled);
+    pointer-events: none;
+  }
+
+  input.control {
+    padding-inline-start: 38px;
+    /* keep placeholder/RTL caret sane for ltr inputs */
+    text-align: left;
+  }
+
+  .toggle-password {
+    position: absolute;
+    inset-inline-end: 8px;
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    display: inline-flex;
+
+    &:hover {
+      color: var(--text);
+    }
+  }
+}
+
+.login-error {
+  background: var(--danger-light);
+  color: var(--danger);
+  border: 1px solid #f5c6c0;
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 12.5px;
+  margin-bottom: 14px;
+}
+
+.login-submit {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.login-footer {
+  font-size: 11.5px;
+}
