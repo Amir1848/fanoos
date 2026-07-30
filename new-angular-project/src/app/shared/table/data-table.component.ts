@@ -43,10 +43,14 @@ export class DataTableComponent {
   readonly pageSize = input(10);
   /** true when the current page is full, so a next page may exist */
   readonly hasNext = input(false);
+  /** icon name for an optional per-row action button; omit to hide the column */
+  readonly rowActionIcon = input<string | null>(null);
+  readonly rowActionTitle = input('');
 
   readonly pageChange = output<number>();
   readonly pageSizeChange = output<number>();
   readonly rowOpen = output<TableRow>();
+  readonly rowAction = output<TableRow>();
   readonly selectionChange = output<number[]>();
 
   readonly pageSizes = PAGE_SIZES;

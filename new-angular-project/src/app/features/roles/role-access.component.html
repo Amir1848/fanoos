@@ -1,0 +1,67 @@
+<div class="page-header">
+  <h2 class="page-title">
+    دسترسی‌های نقش
+    @if (role(); as r) {
+      <span class="page-subtitle">{{ r.title }}</span>
+    }
+  </h2>
+  <div class="page-actions">
+    <button type="button" class="btn btn-outline" (click)="back()">
+      <app-icon name="back" [size]="16" />
+      بازگشت
+    </button>
+    @if (!notFound() && !loading()) {
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!dirty() || saving()">
+        @if (saving()) {
+          <span class="spinner"></span>
+        } @else {
+          <app-icon name="save" [size]="16" />
+        }
+        ذخیره
+      </button>
+    }
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="card form-state">
+    <span class="spinner spinner-dark"></span>
+    در حال بارگذاری دسترسی‌ها…
+  </div>
+} @else if (notFound()) {
+  <div class="card form-state">نقش موردنظر یافت نشد</div>
+} @else if (groups().length === 0) {
+  <div class="card form-state">هیچ منبع دسترسی در سامانه تعریف نشده است</div>
+} @else {
+  <div class="access-grid">
+    @for (group of groups(); track group.name) {
+      <div class="card access-group-card">
+        <label class="access-group-header">
+          <input
+            type="checkbox"
+            [checked]="isGroupFullySelected(group)"
+            (change)="toggleGroup(group, $any($event.target).checked)"
+          />
+          <app-icon [name]="groupIcon(group)" [size]="18" />
+          <span class="group-title">{{ groupLabel(group) }}</span>
+          <span class="group-count">{{ selectedCount(group) }}/{{ group.resources.length }}</span>
+        </label>
+        <div class="access-resource-list">
+          @for (resource of group.resources; track resource.id) {
+            <label class="access-resource-row" [class.checked]="isChecked(resource.id)">
+              <input
+                type="checkbox"
+                [checked]="isChecked(resource.id)"
+                (change)="toggle(resource.id, $any($event.target).checked)"
+              />
+              <span class="access-resource-text">
+                <span class="access-resource-title">{{ keyLabel(resource) }}</span>
+                <span class="access-resource-key ltr">{{ resource.resourceKey }}</span>
+              </span>
+            </label>
+          }
+        </div>
+      </div>
+    }
+  </div>
+}

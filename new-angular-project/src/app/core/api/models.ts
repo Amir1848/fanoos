@@ -30,3 +30,8 @@ export interface RoleSave {
   title: string;
   code: string;
 }
+
+export interface ResourceItem {
+  id: number;
+  resourceKey: string;
+}

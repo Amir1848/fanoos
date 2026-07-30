@@ -71,6 +71,10 @@ export class RolesListComponent {
     this.router.navigate(['/roles/new']);
   }
 
+  manageAccess(row: TableRow): void {
+    this.router.navigate(['/roles', row.id, 'access'], { state: { role: row } });
+  }
+
   async deleteSelected(): Promise<void> {
     const ids = this.selectedIds();
     if (ids.length === 0) {

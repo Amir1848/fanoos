@@ -1,8 +1,8 @@
 package roleresource
 
 type Resource struct {
-	ID          int64
-	ResourceKey string
+	ID          int64  `json:"id"`
+	ResourceKey string `json:"resourceKey"`
 }
 
 type AssignDTO struct {

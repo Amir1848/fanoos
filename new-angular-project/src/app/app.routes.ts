@@ -48,6 +48,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/roles/role-form.component').then((m) => m.RoleFormComponent),
       },
+      {
+        path: 'roles/:id/access',
+        loadComponent: () =>
+          import('./features/roles/role-access.component').then((m) => m.RoleAccessComponent),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

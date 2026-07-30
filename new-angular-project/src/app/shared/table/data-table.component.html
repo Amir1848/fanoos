@@ -17,12 +17,15 @@
           @for (col of columns(); track col.key) {
             <th [style.width]="col.width || null">{{ col.header }}</th>
           }
+          @if (rowActionIcon()) {
+            <th class="action-col"></th>
+          }
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
           <tr class="state-row">
-            <td [attr.colspan]="columns().length + 1">
+            <td [attr.colspan]="columns().length + (rowActionIcon() ? 2 : 1)">
               <div class="state-cell">
                 <span class="spinner spinner-dark"></span>
                 در حال بارگذاری…
@@ -31,7 +34,7 @@
           </tr>
         } @else if (rows().length === 0) {
           <tr class="state-row">
-            <td [attr.colspan]="columns().length + 1">
+            <td [attr.colspan]="columns().length + (rowActionIcon() ? 2 : 1)">
               <div class="state-cell empty">موردی برای نمایش وجود ندارد</div>
             </td>
           </tr>
@@ -61,6 +64,18 @@
                   } @else {
                     {{ cellValue(row, col) ?? '—' }}
                   }
+                </td>
+              }
+              @if (rowActionIcon(); as icon) {
+                <td class="action-col" (click)="$event.stopPropagation()">
+                  <button
+                    type="button"
+                    class="btn btn-ghost"
+                    [title]="rowActionTitle()"
+                    (click)="rowAction.emit(row)"
+                  >
+                    <app-icon [name]="icon" [size]="16" />
+                  </button>
                 </td>
               }
             </tr>

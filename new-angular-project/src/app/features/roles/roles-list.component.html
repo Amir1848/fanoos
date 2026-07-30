@@ -33,8 +33,11 @@
   [page]="page()"
   [pageSize]="pageSize()"
   [hasNext]="hasNext()"
+  rowActionIcon="lock"
+  rowActionTitle="دسترسی‌ها"
   (pageChange)="onPageChange($event)"
   (pageSizeChange)="onPageSizeChange($event)"
   (rowOpen)="openRow($event)"
+  (rowAction)="manageAccess($event)"
   (selectionChange)="selectedIds.set($event)"
 />
