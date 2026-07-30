@@ -19,6 +19,14 @@
     white-space: nowrap;
   }
 
+  /* Columns flagged ltr (usernames, emails, codes…) may still hold RTL text
+     (e.g. a Persian role code) — detect direction from content instead of
+     forcing ltr, so Persian values stay right-aligned. */
+  td.ltr {
+    unicode-bidi: plaintext;
+    text-align: start;
+  }
+
   thead th {
     background: #f7f8fb;
     color: var(--text-secondary);
