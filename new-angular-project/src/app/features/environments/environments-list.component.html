@@ -1,0 +1,43 @@
+<div class="page-header">
+  <h2 class="page-title">
+    محیط‌ها
+    <span class="page-subtitle">نقشه الکتریکی خانه‌ها و محل چراغ‌ها و کلیدها</span>
+  </h2>
+  <div class="page-actions">
+    <button type="button" class="btn btn-ghost" (click)="load()" [disabled]="loading()" title="بازخوانی">
+      <app-icon name="refresh" [size]="17" />
+    </button>
+    <button
+      type="button"
+      class="btn btn-danger"
+      (click)="deleteSelected()"
+      [disabled]="selectedIds().length === 0 || deleting()"
+    >
+      <app-icon name="trash" [size]="16" />
+      حذف
+      @if (selectedIds().length > 0) {
+        ({{ selectedIds().length }})
+      }
+    </button>
+    <button type="button" class="btn btn-primary" (click)="newEnvironment()">
+      <app-icon name="plus" [size]="16" />
+      محیط جدید
+    </button>
+  </div>
+</div>
+
+<app-data-table
+  [columns]="columns"
+  [rows]="rows()"
+  [loading]="loading()"
+  [page]="page()"
+  [pageSize]="pageSize()"
+  [hasNext]="hasNext()"
+  rowActionIcon="grid"
+  rowActionTitle="نقشه شماتیک"
+  (pageChange)="onPageChange($event)"
+  (pageSizeChange)="onPageSizeChange($event)"
+  (rowOpen)="openRow($event)"
+  (rowAction)="openEditor($event)"
+  (selectionChange)="selectedIds.set($event)"
+/>

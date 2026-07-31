@@ -53,6 +53,34 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/roles/role-access.component').then((m) => m.RoleAccessComponent),
       },
+      {
+        path: 'environments',
+        loadComponent: () =>
+          import('./features/environments/environments-list.component').then(
+            (m) => m.EnvironmentsListComponent,
+          ),
+      },
+      {
+        path: 'environments/new',
+        loadComponent: () =>
+          import('./features/environments/environment-form.component').then(
+            (m) => m.EnvironmentFormComponent,
+          ),
+      },
+      {
+        path: 'environments/:id',
+        loadComponent: () =>
+          import('./features/environments/environment-form.component').then(
+            (m) => m.EnvironmentFormComponent,
+          ),
+      },
+      {
+        path: 'environments/:id/editor',
+        loadComponent: () =>
+          import('./features/environments/environment-editor.component').then(
+            (m) => m.EnvironmentEditorComponent,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

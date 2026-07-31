@@ -1,0 +1,97 @@
+<div class="page-header">
+  <h2 class="page-title">
+    نقشه شماتیک
+    @if (environment(); as e) {
+      <span class="page-subtitle">{{ e.name }}</span>
+    }
+  </h2>
+  <div class="page-actions">
+    <button type="button" class="btn btn-outline" (click)="back()">
+      <app-icon name="back" [size]="16" />
+      بازگشت
+    </button>
+    <button
+      type="button"
+      class="btn"
+      [class.btn-primary]="linkMode()"
+      [class.btn-outline]="!linkMode()"
+      (click)="toggleLinkMode()"
+    >
+      <app-icon name="link" [size]="16" />
+      حالت اتصال سیم
+    </button>
+  </div>
+</div>
+
+@if (linkMode()) {
+  <div class="hint-bar">
+    یک چراغ و یک کنترلر را انتخاب کنید تا به هم متصل شوند. اتصال فقط بین یک چراغ و یک کنترلر ممکن است.
+  </div>
+}
+
+<div class="editor-layout">
+  <aside class="card panel">
+    <h3 class="panel-title">افزودن دستگاه</h3>
+    <div class="device-palette">
+      @for (type of deviceTypes; track type.code) {
+        <button type="button" class="btn btn-outline palette-btn" (click)="addDevice(type)">
+          <app-icon name="plus" [size]="14" />
+          {{ type.label }}
+        </button>
+      }
+    </div>
+
+  </aside>
+
+  <div class="canvas-wrapper">
+    @if (loading()) {
+      <div class="canvas-loading">
+        <span class="spinner spinner-dark"></span>
+        در حال بارگذاری نقشه…
+      </div>
+    }
+    <div #canvasHost class="canvas-host" [style.width.px]="stageWidth" [style.height.px]="stageHeight"></div>
+  </div>
+
+  <aside class="card panel">
+    <h3 class="panel-title">جزئیات دستگاه</h3>
+    @if (selectedDevice(); as device) {
+      <div class="form-field">
+        <label>نام دستگاه</label>
+        <input
+          class="control"
+          [value]="device.name"
+          (blur)="renameSelectedDevice($any($event.target).value)"
+        />
+      </div>
+
+      <div class="form-field">
+        <label>نوع دستگاه</label>
+        <input class="control" [value]="deviceTypeLabel(device)" disabled />
+      </div>
+
+      <div class="form-field">
+        <label>اتصالات</label>
+        <ul class="link-list">
+          @for (item of selectedDeviceLinks(); track item.link.id) {
+            <li>
+              <span>{{ item.direction }} {{ item.otherName }}</span>
+              <button type="button" class="btn btn-ghost icon-btn" (click)="deleteLink(item.link.id)" title="حذف اتصال">
+                <app-icon name="trash" [size]="14" />
+              </button>
+            </li>
+          } @empty {
+            <li class="text-secondary">اتصالی ثبت نشده است</li>
+          }
+        </ul>
+      </div>
+
+      <button type="button" class="btn btn-danger" (click)="deleteSelectedDevice()">
+        <app-icon name="trash" [size]="16" />
+        حذف دستگاه
+      </button>
+    } @else {
+      <p class="text-secondary">برای مشاهده و ویرایش جزئیات، روی یک دستگاه در نقشه کلیک کنید.</p>
+    }
+  </aside>
+</div>

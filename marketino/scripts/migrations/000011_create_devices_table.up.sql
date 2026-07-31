@@ -1,0 +1,9 @@
+CREATE TABLE devices (
+    id SERIAL PRIMARY KEY,
+    environment_id INT NOT NULL REFERENCES environments(id) ON DELETE CASCADE,
+    device_type INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    position_x DOUBLE PRECISION NOT NULL DEFAULT 0,
+    position_y DOUBLE PRECISION NOT NULL DEFAULT 0,
+    rotation DOUBLE PRECISION NOT NULL DEFAULT 0
+);

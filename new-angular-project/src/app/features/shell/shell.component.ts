@@ -29,6 +29,7 @@ export class ShellComponent {
     { label: 'داشبورد', icon: 'dashboard', link: '/dashboard' },
     { label: 'کاربران', icon: 'users', link: '/users' },
     { label: 'نقش‌ها', icon: 'shield', link: '/roles' },
+    { label: 'محیط‌ها', icon: 'home', link: '/environments' },
   ];
 
   toggleSidebar(): void {

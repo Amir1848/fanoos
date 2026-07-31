@@ -35,3 +35,48 @@ export interface ResourceItem {
   id: number;
   resourceKey: string;
 }
+
+export interface EnvironmentListItem {
+  id: number;
+  name: string;
+  description: string;
+}
+
+export interface EnvironmentSave {
+  id: number;
+  name: string;
+  description: string;
+}
+
+export interface DeviceListItem {
+  id: number;
+  environmentId: number;
+  deviceType: number;
+  name: string;
+  positionX: number;
+  positionY: number;
+  rotation: number;
+}
+
+export interface DeviceSave {
+  id: number;
+  environmentId: number;
+  deviceType: number;
+  name: string;
+  positionX: number;
+  positionY: number;
+  rotation: number;
+}
+
+export interface DeviceLinkListItem {
+  id: number;
+  sourceDeviceId: number;
+  targetDeviceId: number;
+  linkType: string;
+}
+
+export interface DeviceLinkSave {
+  sourceDeviceId: number;
+  targetDeviceId: number;
+  linkType: string;
+}

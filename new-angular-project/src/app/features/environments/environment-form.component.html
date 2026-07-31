@@ -1,0 +1,75 @@
+<div class="page-header">
+  <h2 class="page-title">
+    @if (isNew()) {
+      محیط جدید
+      <span class="page-subtitle">تعریف یک خانه/محیط جدید</span>
+    } @else {
+      مشاهده محیط
+      @if (environment(); as e) {
+        <span class="page-subtitle">{{ e.name }}</span>
+      }
+    }
+  </h2>
+  <div class="page-actions">
+    <button type="button" class="btn btn-outline" (click)="back()">
+      <app-icon name="back" [size]="16" />
+      بازگشت
+    </button>
+    @if (!isNew() && environment()) {
+      <button type="button" class="btn btn-danger" (click)="deleteEnvironment()">
+        <app-icon name="trash" [size]="16" />
+        حذف محیط
+      </button>
+      <button type="button" class="btn btn-primary" (click)="openEditor()">
+        <app-icon name="grid" [size]="16" />
+        نقشه شماتیک
+      </button>
+    }
+    @if (isNew()) {
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
+        @if (saving()) {
+          <span class="spinner"></span>
+        } @else {
+          <app-icon name="save" [size]="16" />
+        }
+        ذخیره
+      </button>
+    }
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="card form-state">
+    <span class="spinner spinner-dark"></span>
+    در حال بارگذاری اطلاعات محیط…
+  </div>
+} @else if (notFound()) {
+  <div class="card form-state">محیط موردنظر یافت نشد</div>
+} @else {
+  <form class="card entity-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="name">نام محیط@if (isNew()) {<span class="req">*</span>}</label>
+        <input
+          id="name"
+          type="text"
+          class="control"
+          formControlName="name"
+          [class.invalid]="invalid('name')"
+          placeholder="مثلاً: آپارتمان تهران"
+        />
+        <div class="field-error">
+          @if (invalid('name')) {
+            وارد کردن نام محیط الزامی است
+          }
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="description">توضیحات</label>
+        <input id="description" type="text" class="control" formControlName="description" />
+        <div class="field-error"></div>
+      </div>
+    </div>
+  </form>
+}
