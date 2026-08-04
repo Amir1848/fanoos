@@ -12,6 +12,7 @@ func RegisterRoutes(router *gin.RouterGroup) {
 	g.POST("/create", createDevice)
 	g.POST("/update", updateDevice)
 	g.POST("/delete", deleteDevices)
+	g.POST("/command/light", sendLightCommand)
 }
 
 func createDevice(ctx *gin.Context) {
@@ -45,6 +46,23 @@ func updateDevice(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+}
+
+func sendLightCommand(ctx *gin.Context) {
+	c := ctx.Request.Context()
+
+	var dto LightCommandDTO
+	if err := ctx.ShouldBindJSON(&dto); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := SendLightCommand(c, &dto); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
 func deleteDevices(ctx *gin.Context) {

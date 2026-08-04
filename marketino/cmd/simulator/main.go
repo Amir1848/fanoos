@@ -20,17 +20,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const (
-	deviceTypeLight      = "light"
-	deviceTypeController = "controller"
-)
-
-type lightState struct {
-	Type   string `json:"type"`
-	On     bool   `json:"on"`
-	Online bool   `json:"online"`
-	Ts     int64  `json:"ts"`
-}
+const deviceTypeController = "controller"
 
 type controllerState struct {
 	Type    string `json:"type"`
@@ -39,15 +29,10 @@ type controllerState struct {
 	Ts      int64  `json:"ts"`
 }
 
-type lightCmd struct {
-	On bool `json:"on"`
-}
-
 func main() {
 	broker := flag.String("broker", "tcp://localhost:1883", "MQTT broker address")
 	envID := flag.Int64("env", 0, "environment ID this device belongs to")
 	deviceGUID := flag.String("device", "", "device GUID (matches the devices.guid column)")
-	deviceType := flag.String("type", "", "device type: light|controller")
 	clientID := flag.String("client-id", "", "MQTT client ID (default: sim-device-<guid>)")
 	flag.Parse()
 
@@ -57,9 +42,6 @@ func main() {
 	guid, err := uuid.Parse(*deviceGUID)
 	if err != nil {
 		log.Fatalf("invalid -device %q: not a GUID: %v", *deviceGUID, err)
-	}
-	if *deviceType != deviceTypeLight && *deviceType != deviceTypeController {
-		log.Fatalf("invalid -type %q: must be %q or %q", *deviceType, deviceTypeLight, deviceTypeController)
 	}
 	if *clientID == "" {
 		*clientID = fmt.Sprintf("sim-device-%s", guid)
@@ -81,49 +63,19 @@ func main() {
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		log.Fatalf("connect failed: %v", token.Error())
 	}
-	log.Printf("connected to %s as %s (env=%d device=%s type=%s)", *broker, *clientID, *envID, guid, *deviceType)
+	log.Printf("connected to %s as %s (env=%d device=%s type=%s)", *broker, *clientID, *envID, guid, deviceTypeController)
 	log.Printf("cmd topic:   %s", cmdTopic)
 	log.Printf("state topic: %s", stateTopic)
 
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 
-	switch *deviceType {
-	case deviceTypeLight:
-		runLight(client, cmdTopic, stateTopic)
-	case deviceTypeController:
-		runController(client, stateTopic)
-	}
+	runController(client, stateTopic)
 
 	<-sigCh
 	log.Println("shutting down")
 	publishRetained(client, stateTopic, offlinePayload)
 	client.Disconnect(250)
-}
-
-func runLight(client mqtt.Client, cmdTopic, stateTopic string) {
-	on := false
-
-	publishState := func() {
-		payload, _ := json.Marshal(lightState{Type: deviceTypeLight, On: on, Online: true, Ts: nowUnix()})
-		publishRetained(client, stateTopic, payload)
-	}
-
-	token := client.Subscribe(cmdTopic, 1, func(_ mqtt.Client, msg mqtt.Message) {
-		var cmd lightCmd
-		if err := json.Unmarshal(msg.Payload(), &cmd); err != nil {
-			log.Printf("ignoring malformed cmd on %s: %v", msg.Topic(), err)
-			return
-		}
-		on = cmd.On
-		log.Printf("cmd received: on=%v", on)
-		publishState()
-	})
-	if token.Wait() && token.Error() != nil {
-		log.Fatalf("subscribe failed: %v", token.Error())
-	}
-
-	publishState()
 }
 
 func runController(client mqtt.Client, stateTopic string) {

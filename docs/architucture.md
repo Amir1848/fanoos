@@ -42,7 +42,7 @@ flowchart LR
   - Personal access token issuance and validation (used for API auth and, later, device auth).
   - CRUD for "environments" — a home's electrical/device layout (e.g., light locations, switches, desired control behavior).
   - Compiling an environment definition into an executable ESP32 program.
-  - MQTT client/API for communicating with ESP32 devices through the broker.
+  - MQTT client/API for communicating with ESP32 devices through the broker. The client lives in `/marketino/utils/mqttutils`, connects on process startup (auto-reconnecting, non-fatal if the broker is briefly unavailable), and is used by domain packages like `device` to publish commands. `POST /api/devices/command/light` (body: `{deviceId, on}`) looks up the device's environment/GUID/type and publishes `{"on":bool}` to its `cmd` topic.
   - Serves the built Angular frontend as static assets (single deployable artifact).
 - Exposes a REST/HTTP API consumed by the Angular frontend.
 
@@ -73,6 +73,7 @@ Notes:
 - No Kubernetes is used for this project. The stack is small (single backend instance, single database, single broker) and does not need cluster orchestration.
 - `/compose.yml` (repo root) defines the stack. So far only `mosquitto` is wired up (config in `/mosquitto/config/mosquitto.conf`); `backend` and `postgres` services are still to be added.
 - Environment-specific configuration (DB credentials, MQTT broker address, token signing secrets) is injected via environment variables / `.env` files, not hardcoded.
+- Backend MQTT client config: `MQTT_BROKER_URL` (default `tcp://localhost:1883`), `MQTT_CLIENT_ID` (default `marketino-backend`).
 
 ## 7. ESP32 Firmware
 
