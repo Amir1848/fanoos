@@ -8,36 +8,28 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateDevice(ctx context.Context, dto *DeviceSaveDTO) (int64, error) {
+func CreateDevice(ctx context.Context, dto *DeviceSaveDTO) (*Device, error) {
 	if !IsValidType(dto.DeviceType) {
-		return 0, fmt.Errorf("invalid device type: %d", dto.DeviceType)
+		return nil, fmt.Errorf("invalid device type: %d", dto.DeviceType)
 	}
 
-	var deviceID int64
+	d := Device{
+		EnvironmentID: dto.EnvironmentID,
+		DeviceType:    dto.DeviceType,
+		Name:          dto.Name,
+		PositionX:     dto.PositionX,
+		PositionY:     dto.PositionY,
+		Rotation:      dto.Rotation,
+	}
 
 	err := dbutils.Transaction(func(tx *gorm.DB) error {
-		d := Device{
-			EnvironmentID: dto.EnvironmentID,
-			DeviceType:    dto.DeviceType,
-			Name:          dto.Name,
-			PositionX:     dto.PositionX,
-			PositionY:     dto.PositionY,
-			Rotation:      dto.Rotation,
-		}
-
-		if err := tx.Create(&d).Error; err != nil {
-			return err
-		}
-
-		deviceID = d.ID
-
-		return nil
+		return tx.Create(&d).Error
 	})
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	return deviceID, nil
+	return &d, nil
 }
 
 func UpdateDevice(ctx context.Context, dto *DeviceSaveDTO) error {

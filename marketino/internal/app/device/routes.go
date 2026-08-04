@@ -23,13 +23,13 @@ func createDevice(ctx *gin.Context) {
 		return
 	}
 
-	deviceID, err := CreateDevice(c, &dto)
+	d, err := CreateDevice(c, &dto)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"id": deviceID})
+	ctx.JSON(http.StatusOK, gin.H{"id": d.ID, "guid": d.GUID})
 }
 
 func updateDevice(ctx *gin.Context) {
