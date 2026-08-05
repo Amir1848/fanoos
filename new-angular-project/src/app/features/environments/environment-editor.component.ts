@@ -5,19 +5,20 @@ import {
   OnDestroy,
   OnInit,
   computed,
+  effect,
   inject,
   input,
   signal,
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { Subscription, forkJoin, interval, startWith, switchMap } from 'rxjs';
 import Konva from 'konva';
 import { EnvironmentsService } from '../../core/api/environments.service';
 import { DevicesService } from '../../core/api/devices.service';
 import { DeviceLinksService } from '../../core/api/device-links.service';
 import { apiErrorMessage } from '../../core/api/api-error';
-import { DeviceLinkListItem, DeviceListItem, EnvironmentListItem } from '../../core/api/models';
+import { DeviceLinkListItem, DeviceListItem, EnvironmentListItem, LightState } from '../../core/api/models';
 import { DEVICE_TYPES, DeviceType, DeviceTypeOption, deviceTypeLabel } from '../../core/device-types';
 import { ConfirmService } from '../../shared/confirm/confirm.service';
 import { ToastService } from '../../shared/toast/toast.service';
@@ -26,6 +27,7 @@ import { IconComponent } from '../../shared/icon/icon.component';
 const STAGE_WIDTH = 1400;
 const STAGE_HEIGHT = 800;
 const DEVICE_MARGIN = 120;
+const LIGHT_STATE_POLL_MS = 3000;
 
 interface DeviceVisual {
   fill: string;
@@ -68,6 +70,7 @@ export class EnvironmentEditorComponent implements OnInit, AfterViewInit, OnDest
   readonly stageHeight = STAGE_HEIGHT;
 
   readonly deviceTypes = DEVICE_TYPES;
+  readonly DeviceType = DeviceType;
 
   readonly loading = signal(true);
   readonly environment = signal<EnvironmentListItem | null>(null);
@@ -76,6 +79,11 @@ export class EnvironmentEditorComponent implements OnInit, AfterViewInit, OnDest
   readonly selectedDeviceId = signal<number | null>(null);
   readonly linkMode = signal(false);
   readonly linkSourceId = signal<number | null>(null);
+
+  readonly lightState = signal<LightState | null>(null);
+  readonly lightStateLoading = signal(false);
+  readonly lightCommandPending = signal(false);
+  private lightStatePoll: Subscription | null = null;
 
   readonly selectedDevice = computed(
     () => this.devices().find((d) => d.id === this.selectedDeviceId()) ?? null,
@@ -98,6 +106,18 @@ export class EnvironmentEditorComponent implements OnInit, AfterViewInit, OnDest
 
   private stage: Konva.Stage | null = null;
   private layer: Konva.Layer | null = null;
+
+  constructor() {
+    effect(() => {
+      const device = this.selectedDevice();
+      this.stopLightStatePoll();
+      if (device?.deviceType === DeviceType.Light) {
+        this.startLightStatePoll(device.id);
+      } else {
+        this.lightState.set(null);
+      }
+    });
+  }
 
   private environmentId(): number {
     return +this.id();
@@ -151,6 +171,50 @@ export class EnvironmentEditorComponent implements OnInit, AfterViewInit, OnDest
 
   ngOnDestroy(): void {
     this.stage?.destroy();
+    this.stopLightStatePoll();
+  }
+
+  private startLightStatePoll(deviceId: number): void {
+    this.lightStateLoading.set(true);
+    this.lightStatePoll = interval(LIGHT_STATE_POLL_MS)
+      .pipe(
+        startWith(0),
+        switchMap(() => this.devicesService.getLightState(deviceId)),
+      )
+      .subscribe({
+        next: (state) => {
+          this.lightStateLoading.set(false);
+          this.lightState.set(state);
+        },
+        error: () => {
+          this.lightStateLoading.set(false);
+        },
+      });
+  }
+
+  private stopLightStatePoll(): void {
+    this.lightStatePoll?.unsubscribe();
+    this.lightStatePoll = null;
+    this.lightStateLoading.set(false);
+  }
+
+  setLightState(on: boolean): void {
+    const device = this.selectedDevice();
+    if (!device || this.lightCommandPending()) {
+      return;
+    }
+
+    this.lightCommandPending.set(true);
+    this.devicesService.sendLightCommand(device.id, on).subscribe({
+      next: () => {
+        this.lightCommandPending.set(false);
+        this.lightState.update((s) => ({ on, online: s?.online ?? true, ts: s?.ts ?? 0, known: true }));
+      },
+      error: (err) => {
+        this.lightCommandPending.set(false);
+        this.toast.error(apiErrorMessage(err, 'خطا در ارسال دستور به چراغ'));
+      },
+    });
   }
 
   private render(): void {

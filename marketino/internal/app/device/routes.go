@@ -2,6 +2,7 @@ package device
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,6 +14,7 @@ func RegisterRoutes(router *gin.RouterGroup) {
 	g.POST("/update", updateDevice)
 	g.POST("/delete", deleteDevices)
 	g.POST("/command/light", sendLightCommand)
+	g.GET("/:id/state/light", getLightState)
 }
 
 func createDevice(ctx *gin.Context) {
@@ -63,6 +65,24 @@ func sendLightCommand(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+func getLightState(ctx *gin.Context) {
+	c := ctx.Request.Context()
+
+	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid device id"})
+		return
+	}
+
+	state, err := GetLightState(c, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, state)
 }
 
 func deleteDevices(ctx *gin.Context) {

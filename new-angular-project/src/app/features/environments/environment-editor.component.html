@@ -70,6 +70,51 @@
         <input class="control" [value]="deviceTypeLabel(device)" disabled />
       </div>
 
+      @if (device.deviceType === DeviceType.Light) {
+        <div class="form-field">
+          <label>وضعیت چراغ</label>
+          @if (lightStateLoading() && !lightState()) {
+            <div class="text-secondary light-status-row">
+              <span class="spinner spinner-dark"></span>
+              در حال دریافت وضعیت…
+            </div>
+          } @else if (lightState(); as state) {
+            <div class="light-status-row">
+              <span
+                class="status-dot"
+                [class.status-on]="state.known && state.on"
+                [class.status-off]="state.known && !state.on"
+                [class.status-unknown]="!state.known"
+              ></span>
+              <span>
+                {{ state.known ? (state.on ? 'روشن' : 'خاموش') : 'نامشخص' }}
+                @if (state.known && !state.online) {
+                  (آفلاین)
+                }
+              </span>
+            </div>
+          }
+          <div class="light-actions">
+            <button
+              type="button"
+              class="btn btn-outline"
+              [disabled]="lightCommandPending()"
+              (click)="setLightState(true)"
+            >
+              روشن کردن
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline"
+              [disabled]="lightCommandPending()"
+              (click)="setLightState(false)"
+            >
+              خاموش کردن
+            </button>
+          </div>
+        </div>
+      }
+
       <div class="form-field">
         <label>اتصالات</label>
         <ul class="link-list">

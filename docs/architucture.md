@@ -42,7 +42,7 @@ flowchart LR
   - Personal access token issuance and validation (used for API auth and, later, device auth).
   - CRUD for "environments" — a home's electrical/device layout (e.g., light locations, switches, desired control behavior).
   - Compiling an environment definition into an executable ESP32 program.
-  - MQTT client/API for communicating with ESP32 devices through the broker. The client lives in `/marketino/utils/mqttutils`, connects on process startup (auto-reconnecting, non-fatal if the broker is briefly unavailable), and is used by domain packages like `device` to publish commands. `POST /api/devices/command/light` (body: `{deviceId, on}`) looks up the device's environment/GUID/type and publishes `{"on":bool}` to its `cmd` topic.
+  - MQTT client/API for communicating with ESP32 devices through the broker. The client lives in `/marketino/utils/mqttutils`, connects on process startup (auto-reconnecting, non-fatal if the broker is briefly unavailable), and is used by domain packages like `device` to publish commands. `POST /api/devices/command/light` (body: `{deviceId, on}`) looks up the device's environment/GUID/type and publishes `{"on":bool}` to its `cmd` topic. The client also subscribes to every device's `state` topic (`home/+/device/+/state`); each message is persisted to the `device_states` table (keyed by device GUID) via a handler the `device` package registers with `mqttutils.SetStateHandler`, rather than being cached in memory — this keeps state readable/consistent no matter which backend instance handles a given request (running multiple instances still needs a unique `MQTT_CLIENT_ID` per instance, which is not yet solved). `GET /api/devices/:id/state/light` reads that table for a given device (`{on, online, ts, known}`, where `known` is false until a `device_states` row exists for it).
   - Serves the built Angular frontend as static assets (single deployable artifact).
 - Exposes a REST/HTTP API consumed by the Angular frontend.
 
@@ -54,7 +54,7 @@ The backend uses PostgreSQL as its primary datastore. Expected data owned here:
 - **Personal access tokens** — issued tokens, scopes, expiry, revocation state.
 - **Environments** — home/device layout definitions (rooms, devices, wiring/control relationships).
 - **Devices** — registered ESP32 devices, their identity, and which environment they belong to. Each device has both an internal integer `id` (used only for foreign keys/joins, e.g. `device_links`) and a database-generated `guid` (UUID, unique, immutable) — the `guid` is the external-facing identifier meant for addressing a device from outside the DB (a controller, and later firmware/MQTT), so that never leaks or depends on the sequential internal id.
-- **Device state / history** *(optional, if needed later)* — last-known state or event history reported over MQTT.
+- **Device state** — `device_states` table, one row per device that has reported over MQTT, keyed by device `guid`: last-known `is_on`, `online`, and report timestamp (`ts`).
 
 Conventions:
 - Schema migrations live under `/marketino/scripts/migrations`.

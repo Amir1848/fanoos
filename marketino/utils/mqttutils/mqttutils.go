@@ -4,9 +4,11 @@
 package mqttutils
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -14,6 +16,31 @@ import (
 )
 
 var client mqtt.Client
+
+// StateUpdate is a partial state report parsed off a device's `state`
+// topic. A nil field means the message didn't mention it (e.g. a last-will
+// "offline" message only carries Online) and any previously stored value
+// for that field should be left as-is.
+type StateUpdate struct {
+	On     *bool
+	Online *bool
+	Ts     int64
+}
+
+// StateHandler persists a device's state update. Callers that need to read
+// device state back out (e.g. the device package, over its own DB
+// connection) register one via SetStateHandler; mqttutils itself doesn't
+// store anything, it just parses topic/payload and forwards.
+type StateHandler func(deviceGUID uuid.UUID, update StateUpdate)
+
+var stateHandler StateHandler
+
+// SetStateHandler registers the callback invoked for every message on a
+// device's state topic. Only one handler is supported; call this once at
+// startup.
+func SetStateHandler(h StateHandler) {
+	stateHandler = h
+}
 
 func init() {
 	initClient()
@@ -29,8 +56,9 @@ func initClient() {
 		SetAutoReconnect(true).
 		SetConnectRetry(true).
 		SetConnectRetryInterval(2 * time.Second).
-		SetOnConnectHandler(func(mqtt.Client) {
+		SetOnConnectHandler(func(c mqtt.Client) {
 			log.Printf("mqtt: connected to %s as %s", broker, clientID)
+			subscribeStateTopics(c)
 		}).
 		SetConnectionLostHandler(func(_ mqtt.Client, err error) {
 			log.Printf("mqtt: connection lost: %v", err)
@@ -75,6 +103,45 @@ func Publish(topic string, payload []byte) error {
 	token := c.Publish(topic, 1, true, payload)
 	token.Wait()
 	return token.Error()
+}
+
+// subscribeStateTopics listens to every device's state topic so the backend
+// can answer "is this device on?" without round-tripping to the device.
+// Re-subscribing on every connect (including reconnects) is required since
+// paho drops subscriptions across a lost connection.
+func subscribeStateTopics(c mqtt.Client) {
+	token := c.Subscribe("home/+/device/+/state", 1, handleStateMessage)
+	if token.Wait() && token.Error() != nil {
+		log.Printf("mqtt: subscribe to state topics failed: %v", token.Error())
+	}
+}
+
+func handleStateMessage(_ mqtt.Client, msg mqtt.Message) {
+	if stateHandler == nil {
+		return
+	}
+
+	// home/{environment_id}/device/{device_guid}/state
+	parts := strings.Split(msg.Topic(), "/")
+	if len(parts) != 5 {
+		return
+	}
+	deviceGUID, err := uuid.Parse(parts[3])
+	if err != nil {
+		return
+	}
+
+	var raw struct {
+		On     *bool `json:"on"`
+		Online *bool `json:"online"`
+		Ts     int64 `json:"ts"`
+	}
+	if err := json.Unmarshal(msg.Payload(), &raw); err != nil {
+		log.Printf("mqtt: ignoring malformed state on %s: %v", msg.Topic(), err)
+		return
+	}
+
+	stateHandler(deviceGUID, StateUpdate{On: raw.On, Online: raw.Online, Ts: raw.Ts})
 }
 
 func getEnv(key, fallback string) string {

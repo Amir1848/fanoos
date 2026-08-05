@@ -61,6 +61,39 @@
   padding: 4px;
 }
 
+.light-status-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  flex: none;
+
+  &.status-on {
+    background: var(--success);
+  }
+
+  &.status-off {
+    background: var(--text-secondary);
+  }
+
+  &.status-unknown {
+    background: var(--warning);
+  }
+}
+
+.light-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
 .canvas-wrapper {
   position: relative;
   overflow: auto;

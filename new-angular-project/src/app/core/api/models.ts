@@ -68,6 +68,13 @@ export interface DeviceSave {
   rotation: number;
 }
 
+export interface LightState {
+  on: boolean;
+  online: boolean;
+  ts: number;
+  known: boolean;
+}
+
 export interface DeviceLinkListItem {
   id: number;
   sourceDeviceId: number;
