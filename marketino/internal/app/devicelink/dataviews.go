@@ -13,7 +13,7 @@ func RegisterDataviews(r *gin.RouterGroup) {
 		Id             int64  `json:"id"`
 		SourceDeviceId int64  `json:"sourceDeviceId"`
 		TargetDeviceId int64  `json:"targetDeviceId"`
-		LinkType       string `json:"linkType"`
+		LinkType       int    `json:"linkType"`
 	}, struct {
 		EnvironmentID int64
 	}]{

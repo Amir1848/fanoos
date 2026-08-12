@@ -26,8 +26,11 @@ func CreateDeviceLink(ctx context.Context, dto *DeviceLinkSaveDTO) (int64, error
 		}
 
 		linkType := dto.LinkType
-		if linkType == "" {
-			linkType = "toggle"
+		if linkType == 0 {
+			linkType = LinkTypeToggle
+		}
+		if !IsValidLinkType(linkType) {
+			return fmt.Errorf("invalid link type: %d", linkType)
 		}
 
 		link := DeviceLink{

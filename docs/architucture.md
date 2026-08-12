@@ -42,7 +42,7 @@ flowchart LR
   - Personal access token issuance and validation (used for API auth and, later, device auth).
   - CRUD for "environments" — a home's electrical/device layout (e.g., light locations, switches, desired control behavior).
   - Compiling an environment definition into an executable ESP32 program.
-  - MQTT client/API for communicating with ESP32 devices through the broker. The client lives in `/marketino/utils/mqttutils`, connects on process startup (auto-reconnecting, non-fatal if the broker is briefly unavailable), and is used by domain packages like `device` to publish commands. `POST /api/devices/command/light` (body: `{deviceId, on}`) looks up the device's environment/GUID/type and publishes `{"on":bool}` to its `cmd` topic. The client also subscribes to every device's `state` topic (`home/+/device/+/state`); each message is persisted to the `device_states` table (keyed by device GUID) via a handler the `device` package registers with `mqttutils.SetStateHandler`, rather than being cached in memory — this keeps state readable/consistent no matter which backend instance handles a given request (running multiple instances still needs a unique `MQTT_CLIENT_ID` per instance, which is not yet solved). `GET /api/devices/:id/state/light` reads that table for a given device (`{on, online, ts, known}`, where `known` is false until a `device_states` row exists for it).
+  - MQTT client/API for communicating with ESP32 devices through the broker. The client lives in `/marketino/utils/mqttutils`, connects on process startup (auto-reconnecting, non-fatal if the broker is briefly unavailable), and is used by domain packages like `device` to publish commands. `POST /api/devices/command/light` (body: `{deviceId, on}`) looks up the device's environment/GUID/type and publishes `{"on":bool}` to its `cmd` topic. The client also subscribes to every device's `state` topic (`home/+/device/+/state`); each message is persisted to the `device_states` table (keyed by device GUID) via a handler the `device` package registers with `mqttutils.SetStateHandler`, rather than being cached in memory — this keeps state readable/consistent no matter which backend instance handles a given request (running multiple instances still needs a unique `MQTT_CLIENT_ID` per instance, which is not yet solved). `GET /api/devices/:id/state/light` reads that table for a given device (`{on, online, ts, known}`, where `known` is false until a `device_states` row exists for it). `GET /api/devices/:id/state/controller` is the analogous read for a controller — same table, but returns `{online, ts, known}` only, since controllers have no `on` concept (`is_on` is meaningless for them and intentionally omitted).
   - Serves the built Angular frontend as static assets (single deployable artifact).
 - Exposes a REST/HTTP API consumed by the Angular frontend.
 
@@ -92,9 +92,7 @@ Notes:
   - Light cmd: `{"on":bool}`
   - Controller state: `{"type":"controller","pressed":bool,"online":bool,"ts":unix_seconds}` — a momentary event (`pressed:true` immediately followed by `pressed:false`), not a persistent mode. Controllers do not currently accept a `cmd`.
   - A device's Last Will is `{"online":false,"ts":unix_seconds}` on its state topic, so the broker reports it offline if it disconnects uncleanly.
-  - `device_links.link_type` distinguishes two roles a Controller device can play with a linked Light, both `source_device_id`=Controller, `target_device_id`=Light:
-    - `toggle` — the Controller is a physical switch; mediating this (subscribing to the Controller's state, publishing the resulting `cmd` to the linked Light) is backend logic that does not exist yet, so today it must be exercised manually (e.g. `mosquitto_pub`) or via a second simulator instance.
-    - `circuit` — the Light is one of the Controller board's own relay/circuit outputs (e.g. one ESP32 driving several lights). No backend mediation is needed here: the Light already has its own independent `cmd`/`state` topics under its own GUID, unrelated to the Controller's topics; the link only tells `cmd/simulator` which lights to simulate under a given controller.
+  - `device_links.link_type` is a SMALLINT constrained to 1–4 (CHECK), with only one value defined today: `1` = toggle (controller acts as a physical switch for the linked light). The `devices` table's internal integer `id` is what `device_links` foreign keys reference (not `devices.guid`), since that table is backend-internal and never exposed over MQTT. The unique constraint `UNIQUE(source_device_id, target_device_id)` (no `link_type` in it) means only one link can exist between a given controller/light pair.
 - Still open before production use:
   - Per-device authentication and topic-level ACLs (a device should only access its own topics).
   - TLS for broker connections.
@@ -103,6 +101,6 @@ Notes:
 
 - Device provisioning flow (how an ESP32 gets its first config/credentials).
 - Per-device MQTT authentication and topic-level access control.
-- Backend-side mediation of `device_links` over MQTT (subscribing to controller state, publishing commands to linked lights).
+- Backend-side mediation of `device_links` over MQTT (subscribing to controller state, publishing commands to linked lights) for the toggle link type.
 - Real-time state push to the frontend (likely WebSockets/SSE from the backend) — not yet specified.
 - `device_links` foreign keys still reference `devices.id` (internal), not `devices.guid` — fine for now since that table is backend-internal and never exposed over MQTT.

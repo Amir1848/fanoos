@@ -15,6 +15,7 @@ func RegisterRoutes(router *gin.RouterGroup) {
 	g.POST("/delete", deleteDevices)
 	g.POST("/command/light", sendLightCommand)
 	g.GET("/:id/state/light", getLightState)
+	g.GET("/:id/state/controller", getControllerState)
 }
 
 func createDevice(ctx *gin.Context) {
@@ -77,6 +78,24 @@ func getLightState(ctx *gin.Context) {
 	}
 
 	state, err := GetLightState(c, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, state)
+}
+
+func getControllerState(ctx *gin.Context) {
+	c := ctx.Request.Context()
+
+	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid device id"})
+		return
+	}
+
+	state, err := GetControllerState(c, id)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

@@ -75,15 +75,21 @@ export interface LightState {
   known: boolean;
 }
 
+export interface ControllerState {
+  online: boolean;
+  ts: number;
+  known: boolean;
+}
+
 export interface DeviceLinkListItem {
   id: number;
   sourceDeviceId: number;
   targetDeviceId: number;
-  linkType: string;
+  linkType: number;
 }
 
 export interface DeviceLinkSave {
   sourceDeviceId: number;
   targetDeviceId: number;
-  linkType: string;
+  linkType: number;
 }

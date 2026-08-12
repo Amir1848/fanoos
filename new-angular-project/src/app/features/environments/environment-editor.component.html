@@ -115,6 +115,28 @@
         </div>
       }
 
+      @if (device.deviceType === DeviceType.Controller) {
+        <div class="form-field">
+          <label>وضعیت کنترلر</label>
+          @if (controllerStateLoading() && !controllerState()) {
+            <div class="text-secondary light-status-row">
+              <span class="spinner spinner-dark"></span>
+              در حال دریافت وضعیت…
+            </div>
+          } @else if (controllerState(); as state) {
+            <div class="light-status-row">
+              <span
+                class="status-dot"
+                [class.status-on]="state.known && state.online"
+                [class.status-off]="state.known && !state.online"
+                [class.status-unknown]="!state.known"
+              ></span>
+              <span>{{ state.known ? (state.online ? 'آنلاین' : 'آفلاین') : 'نامشخص' }}</span>
+            </div>
+          }
+        </div>
+      }
+
       <div class="form-field">
         <label>اتصالات</label>
         <ul class="link-list">

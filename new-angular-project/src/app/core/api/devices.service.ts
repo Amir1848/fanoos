@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { DataviewService } from './dataview.service';
-import { DeviceListItem, DeviceSave, LightState } from './models';
+import { DeviceListItem, DeviceSave, LightState, ControllerState } from './models';
 
 /** A single home's device layout — one page comfortably covers all of them. */
 const ALL_DEVICES_PAGE_SIZE = 500;
@@ -30,6 +30,10 @@ export class DevicesService {
 
   getLightState(deviceId: number): Observable<LightState> {
     return this.http.get<LightState>(`/api/devices/${deviceId}/state/light`);
+  }
+
+  getControllerState(deviceId: number): Observable<ControllerState> {
+    return this.http.get<ControllerState>(`/api/devices/${deviceId}/state/controller`);
   }
 
   sendLightCommand(deviceId: number, on: boolean): Observable<{ ok: boolean }> {

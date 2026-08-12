@@ -18,7 +18,7 @@ import { EnvironmentsService } from '../../core/api/environments.service';
 import { DevicesService } from '../../core/api/devices.service';
 import { DeviceLinksService } from '../../core/api/device-links.service';
 import { apiErrorMessage } from '../../core/api/api-error';
-import { DeviceLinkListItem, DeviceListItem, EnvironmentListItem, LightState } from '../../core/api/models';
+import { DeviceLinkListItem, DeviceListItem, EnvironmentListItem, LightState, ControllerState } from '../../core/api/models';
 import { DEVICE_TYPES, DeviceType, DeviceTypeOption, deviceTypeLabel } from '../../core/device-types';
 import { ConfirmService } from '../../shared/confirm/confirm.service';
 import { ToastService } from '../../shared/toast/toast.service';
@@ -39,6 +39,8 @@ const DEVICE_VISUALS: Record<number, DeviceVisual> = {
   [DeviceType.Controller]: { fill: '#3f51b5', radius: 15 },
 };
 const DEFAULT_VISUAL: DeviceVisual = { fill: '#5b6472', radius: 15 };
+
+const LINK_TYPE_TOGGLE = 1;
 
 interface SelectedDeviceLink {
   link: DeviceLinkListItem;
@@ -85,6 +87,10 @@ export class EnvironmentEditorComponent implements OnInit, AfterViewInit, OnDest
   readonly lightCommandPending = signal(false);
   private lightStatePoll: Subscription | null = null;
 
+  readonly controllerState = signal<ControllerState | null>(null);
+  readonly controllerStateLoading = signal(false);
+  private controllerStatePoll: Subscription | null = null;
+
   readonly selectedDevice = computed(
     () => this.devices().find((d) => d.id === this.selectedDeviceId()) ?? null,
   );
@@ -111,10 +117,14 @@ export class EnvironmentEditorComponent implements OnInit, AfterViewInit, OnDest
     effect(() => {
       const device = this.selectedDevice();
       this.stopLightStatePoll();
+      this.stopControllerStatePoll();
       if (device?.deviceType === DeviceType.Light) {
         this.startLightStatePoll(device.id);
+      } else if (device?.deviceType === DeviceType.Controller) {
+        this.startControllerStatePoll(device.id);
       } else {
         this.lightState.set(null);
+        this.controllerState.set(null);
       }
     });
   }
@@ -172,6 +182,7 @@ export class EnvironmentEditorComponent implements OnInit, AfterViewInit, OnDest
   ngOnDestroy(): void {
     this.stage?.destroy();
     this.stopLightStatePoll();
+    this.stopControllerStatePoll();
   }
 
   private startLightStatePoll(deviceId: number): void {
@@ -196,6 +207,30 @@ export class EnvironmentEditorComponent implements OnInit, AfterViewInit, OnDest
     this.lightStatePoll?.unsubscribe();
     this.lightStatePoll = null;
     this.lightStateLoading.set(false);
+  }
+
+  private startControllerStatePoll(deviceId: number): void {
+    this.controllerStateLoading.set(true);
+    this.controllerStatePoll = interval(LIGHT_STATE_POLL_MS)
+      .pipe(
+        startWith(0),
+        switchMap(() => this.devicesService.getControllerState(deviceId)),
+      )
+      .subscribe({
+        next: (state) => {
+          this.controllerStateLoading.set(false);
+          this.controllerState.set(state);
+        },
+        error: () => {
+          this.controllerStateLoading.set(false);
+        },
+      });
+  }
+
+  private stopControllerStatePoll(): void {
+    this.controllerStatePoll?.unsubscribe();
+    this.controllerStatePoll = null;
+    this.controllerStateLoading.set(false);
   }
 
   setLightState(on: boolean): void {
@@ -407,12 +442,19 @@ export class EnvironmentEditorComponent implements OnInit, AfterViewInit, OnDest
     );
   }
 
-  private createLink(sourceId: number, targetId: number): void {
-    this.deviceLinksService.create({ sourceDeviceId: sourceId, targetDeviceId: targetId, linkType: 'toggle' }).subscribe({
+  private createLink(firstId: number, secondId: number): void {
+    const linkType = LINK_TYPE_TOGGLE;
+    const firstDevice = this.devices().find((d) => d.id === firstId);
+    const secondDevice = this.devices().find((d) => d.id === secondId);
+
+    const sourceDeviceId = firstDevice?.deviceType === DeviceType.Controller ? firstId : secondId;
+    const targetDeviceId = firstDevice?.deviceType === DeviceType.Controller ? secondId : firstId;
+
+    this.deviceLinksService.create({ sourceDeviceId, targetDeviceId, linkType }).subscribe({
       next: ({ id }) => {
         this.links.update((list) => [
           ...list,
-          { id, sourceDeviceId: sourceId, targetDeviceId: targetId, linkType: 'toggle' },
+          { id, sourceDeviceId, targetDeviceId, linkType },
         ]);
         this.linkSourceId.set(null);
         this.render();

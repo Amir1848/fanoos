@@ -41,11 +41,10 @@ const (
 	dbDeviceTypeController = 2
 )
 
-// linkTypeCircuit marks a device_links row as "target light is wired to
-// source controller as a circuit" (as opposed to the existing "toggle"
-// link_type, which represents a controller acting as a physical switch for
-// a light). Both link types can exist on the same controller device.
-const linkTypeCircuit = "circuit"
+// linkTypeToggle marks a device_links row as "controller toggles light"
+// (see devicelink.LinkTypeToggle). Today this is the only link type; the
+// simulator drives every light linked to the controller this way.
+const linkTypeToggle = 1
 
 type controllerState struct {
 	Type    string `json:"type"`
@@ -126,7 +125,7 @@ func main() {
 }
 
 // loadCircuits looks up the controller device by GUID and every light
-// wired to it via a device_links row with link_type="circuit"
+// linked to it via a device_links row with link_type=1 (toggle)
 // (source_device_id=controller, target_device_id=light).
 func loadCircuits(controllerGUID uuid.UUID) (envID int64, controllerName string, circuits []*circuit) {
 	db := dbutils.GetDB()
@@ -157,7 +156,7 @@ func loadCircuits(controllerGUID uuid.UUID) (envID int64, controllerName string,
 	err = db.Table("device_links dl").
 		Select("d.guid AS guid, d.name AS name").
 		Joins("JOIN devices d ON d.id = dl.target_device_id").
-		Where("dl.source_device_id = ? AND dl.link_type = ? AND d.device_type = ?", ctrl.ID, linkTypeCircuit, dbDeviceTypeLight).
+		Where("dl.source_device_id = ? AND dl.link_type = ? AND d.device_type = ?", ctrl.ID, linkTypeToggle, dbDeviceTypeLight).
 		Order("d.id").
 		Scan(&rows).Error
 	if err != nil {

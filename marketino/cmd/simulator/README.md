@@ -17,22 +17,19 @@ startup as a dev convenience.
 docker compose up mosquitto
 ```
 
-## Wire a light to a controller as a circuit
+## Wire a light to a controller
 
-A light only gets simulated if there's a `device_links` row with
-`link_type="circuit"`, `source_device_id` = the controller, and
-`target_device_id` = the light:
+A light only gets simulated if there's a `device_links` row linking it to
+the controller (`link_type=1` toggle, `source_device_id` = the controller,
+`target_device_id` = the light). Create one from the environment editor's
+link mode (click "حالت اتصال سیم", then click the controller and the
+light) or via the API:
 
 ```sh
 curl -X POST localhost:3000/device-links/create \
   -H 'Content-Type: application/json' \
-  -d '{"sourceDeviceId": <controller id>, "targetDeviceId": <light id>, "linkType": "circuit"}'
+  -d '{"sourceDeviceId": <controller id>, "targetDeviceId": <light id>, "linkType": 1}'
 ```
-
-(The `/device-links/create` endpoint already accepts any `linkType` string —
-no backend change needed. There's currently no UI for creating `circuit`
-links, only the `toggle` links used for switch-controls-light behavior; add
-one if this becomes a real feature rather than dev tooling.)
 
 ## Run a simulated controller
 

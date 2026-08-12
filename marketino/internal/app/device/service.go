@@ -149,6 +149,12 @@ type LightStateDTO struct {
 	Known  bool  `json:"known"`
 }
 
+type ControllerStateDTO struct {
+	Online bool  `json:"online"`
+	Ts     int64 `json:"ts"`
+	Known  bool  `json:"known"`
+}
+
 // GetLightState returns the last state reported by a light over MQTT,
 // persisted to the device_states table by handleDeviceStateUpdate (see
 // docs/architucture.md §8). Known is false if no device_states row exists
@@ -190,4 +196,47 @@ func GetLightState(ctx context.Context, deviceID int64) (*LightStateDTO, error) 
 	}
 
 	return &LightStateDTO{On: row.IsOn, Online: row.Online, Ts: row.Ts, Known: true}, nil
+}
+
+// GetControllerState returns the last online/offline state reported by a
+// controller over MQTT, persisted to the device_states table by
+// handleDeviceStateUpdate (see docs/architucture.md §8). Known is false
+// if no device_states row exists yet for this device. Controllers have no
+// "on" concept — `is_on` is meaningless for them and intentionally omitted.
+func GetControllerState(ctx context.Context, deviceID int64) (*ControllerStateDTO, error) {
+	var target struct {
+		GUID       uuid.UUID
+		DeviceType int
+	}
+
+	err := dbutils.GetDB().WithContext(ctx).
+		Table("devices").
+		Select("guid, device_type").
+		Where("id = ?", deviceID).
+		Take(&target).Error
+	if err != nil {
+		return nil, fmt.Errorf("device %d not found: %w", deviceID, err)
+	}
+
+	if target.DeviceType != TypeController {
+		return nil, fmt.Errorf("device %d is not a controller", deviceID)
+	}
+
+	var row struct {
+		Online bool
+		Ts     int64
+	}
+	err = dbutils.GetDB().WithContext(ctx).
+		Table("device_states").
+		Select("online, ts").
+		Where("device_guid = ?", target.GUID).
+		Take(&row).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return &ControllerStateDTO{Known: false}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &ControllerStateDTO{Online: row.Online, Ts: row.Ts, Known: true}, nil
 }
