@@ -1,6 +1,19 @@
 services:
+  postgres:
+    image: docker.arvancloud.ir/postgres:16
+    container_name: marketino-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: marketino
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
   mosquitto:
-    image: eclipse-mosquitto:2
+    image: docker.arvancloud.ir/eclipse-mosquitto:2
     container_name: marketino-mosquitto
     restart: unless-stopped
     ports:
@@ -10,6 +23,20 @@ services:
       - mosquitto-data:/mosquitto/data
       - mosquitto-log:/mosquitto/log
 
+  pgadmin:
+    image: mirror-docker.runflare.com/dpage/pgadmin4:latest
+    container_name: marketino-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@marketino.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
 volumes:
   mosquitto-data:
   mosquitto-log:
+  postgres-data:
+  pgadmin-data:
