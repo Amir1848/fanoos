@@ -18,11 +18,12 @@ import { EnvironmentsService } from '../../core/api/environments.service';
 import { DevicesService } from '../../core/api/devices.service';
 import { DeviceLinksService } from '../../core/api/device-links.service';
 import { apiErrorMessage } from '../../core/api/api-error';
-import { DeviceLinkListItem, DeviceListItem, EnvironmentListItem, LightState, ControllerState } from '../../core/api/models';
+import { DeviceLinkListItem, DeviceListItem, EnvironmentListItem, LightState, ControllerState, ControllerFirmware } from '../../core/api/models';
 import { DEVICE_TYPES, DeviceType, DeviceTypeOption, deviceTypeLabel } from '../../core/device-types';
 import { ConfirmService } from '../../shared/confirm/confirm.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { IconComponent } from '../../shared/icon/icon.component';
+import { renderMarkdown } from '../../shared/markdown';
 
 const STAGE_WIDTH = 1400;
 const STAGE_HEIGHT = 800;
@@ -90,6 +91,15 @@ export class EnvironmentEditorComponent implements OnInit, AfterViewInit, OnDest
   readonly controllerState = signal<ControllerState | null>(null);
   readonly controllerStateLoading = signal(false);
   private controllerStatePoll: Subscription | null = null;
+
+  readonly firmwareLoading = signal(false);
+  readonly firmware = signal<ControllerFirmware | null>(null);
+  readonly firmwareTab = signal<'ino' | 'readme'>('ino');
+
+  readonly readmeHtml = computed(() => {
+    const fw = this.firmware();
+    return fw ? renderMarkdown(fw.readme) : '';
+  });
 
   readonly selectedDevice = computed(
     () => this.devices().find((d) => d.id === this.selectedDeviceId()) ?? null,
@@ -479,6 +489,68 @@ export class EnvironmentEditorComponent implements OnInit, AfterViewInit, OnDest
 
   deviceTypeLabel(device: DeviceListItem): string {
     return deviceTypeLabel(device.deviceType);
+  }
+
+  loadFirmware(): void {
+    const device = this.selectedDevice();
+    if (!device || this.firmwareLoading()) {
+      return;
+    }
+
+    this.firmwareLoading.set(true);
+    this.devicesService.getFirmware(device.id).subscribe({
+      next: (fw) => {
+        this.firmwareLoading.set(false);
+        this.firmwareTab.set('ino');
+        this.firmware.set(fw);
+      },
+      error: (err) => {
+        this.firmwareLoading.set(false);
+        this.toast.error(apiErrorMessage(err, 'خطا در دریافت سورس کد کنترلر'));
+      },
+    });
+  }
+
+  closeFirmware(): void {
+    this.firmware.set(null);
+  }
+
+  private firmwareFile(): { name: string; content: string } | null {
+    const fw = this.firmware();
+    if (!fw) {
+      return null;
+    }
+    return this.firmwareTab() === 'ino'
+      ? { name: 'controller.ino', content: fw.ino }
+      : { name: 'README.md', content: fw.readme };
+  }
+
+  downloadFirmwareFile(): void {
+    const file = this.firmwareFile();
+    if (!file) {
+      return;
+    }
+
+    const url = URL.createObjectURL(new Blob([file.content], { type: 'text/plain;charset=utf-8' }));
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = file.name;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async copyFirmwareFile(): Promise<void> {
+    const file = this.firmwareFile();
+    if (!file) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(file.content);
+      this.toast.success(`${file.name} کپی شد`);
+    } catch {
+      this.toast.error('کپی در کلیپ‌بورد ممکن نشد');
+    }
   }
 
   back(): void {

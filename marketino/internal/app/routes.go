@@ -5,6 +5,7 @@ import (
 	"github.com/amir1848/marketino/internal/app/device"
 	"github.com/amir1848/marketino/internal/app/devicelink"
 	"github.com/amir1848/marketino/internal/app/environment"
+	"github.com/amir1848/marketino/internal/app/firmware"
 	"github.com/amir1848/marketino/internal/app/patoken"
 	"github.com/amir1848/marketino/internal/app/role"
 	"github.com/amir1848/marketino/internal/app/roleresource"
@@ -25,6 +26,7 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	environment.RegisterRoutes(protected)
 	device.RegisterRoutes(protected)
 	devicelink.RegisterRoutes(protected)
+	firmware.RegisterRoutes(protected)
 }
 
 func RegisterDataviews(r *gin.RouterGroup) {

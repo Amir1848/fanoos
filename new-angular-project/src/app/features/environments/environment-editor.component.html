@@ -135,6 +135,26 @@
             </div>
           }
         </div>
+
+        <div class="form-field">
+          <label>سورس کد</label>
+          <button
+            type="button"
+            class="btn btn-outline"
+            [disabled]="firmwareLoading()"
+            (click)="loadFirmware()"
+          >
+            @if (firmwareLoading()) {
+              <span class="spinner spinner-dark"></span>
+            } @else {
+              <app-icon name="code" [size]="16" />
+            }
+            دریافت سورس کد
+          </button>
+          <p class="text-secondary firmware-hint">
+            کد آردوینو و راهنمای سیم‌کشی این کنترلر بر اساس چراغ‌های متصل به آن تولید می‌شود.
+          </p>
+        </div>
       }
 
       <div class="form-field">
@@ -162,3 +182,54 @@
     }
   </aside>
 </div>
+
+@if (firmware(); as fw) {
+  <div class="fw-overlay" (click)="closeFirmware()">
+    <div class="fw-dialog card" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="fw-header">
+        <h3 class="fw-title">
+          <app-icon name="code" [size]="16" />
+          سورس کد کنترلر
+        </h3>
+        <button type="button" class="btn btn-ghost icon-btn" (click)="closeFirmware()" title="بستن">
+          <app-icon name="close" [size]="16" />
+        </button>
+      </div>
+
+      <div class="fw-toolbar">
+        <div class="fw-tabs">
+          <button
+            type="button"
+            class="fw-tab"
+            [class.fw-tab-active]="firmwareTab() === 'ino'"
+            (click)="firmwareTab.set('ino')"
+          >
+            controller.ino
+          </button>
+          <button
+            type="button"
+            class="fw-tab"
+            [class.fw-tab-active]="firmwareTab() === 'readme'"
+            (click)="firmwareTab.set('readme')"
+          >
+            README.md
+          </button>
+        </div>
+        <button type="button" class="btn btn-outline" (click)="copyFirmwareFile()">
+          <app-icon name="copy" [size]="14" />
+          کپی
+        </button>
+        <button type="button" class="btn btn-primary" (click)="downloadFirmwareFile()">
+          <app-icon name="download" [size]="14" />
+          دانلود
+        </button>
+      </div>
+
+      @if (firmwareTab() === 'ino') {
+        <pre class="fw-code">{{ fw.ino }}</pre>
+      } @else {
+        <div class="fw-code fw-md" [innerHTML]="readmeHtml()"></div>
+      }
+    </div>
+  </div>
+}

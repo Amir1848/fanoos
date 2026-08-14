@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { DataviewService } from './dataview.service';
-import { DeviceListItem, DeviceSave, LightState, ControllerState } from './models';
+import { DeviceListItem, DeviceSave, LightState, ControllerState, ControllerFirmware } from './models';
 
 /** A single home's device layout — one page comfortably covers all of them. */
 const ALL_DEVICES_PAGE_SIZE = 500;
@@ -38,5 +38,9 @@ export class DevicesService {
 
   sendLightCommand(deviceId: number, on: boolean): Observable<{ ok: boolean }> {
     return this.http.post<{ ok: boolean }>('/api/devices/command/light', { deviceId, on });
+  }
+
+  getFirmware(deviceId: number): Observable<ControllerFirmware> {
+    return this.http.get<ControllerFirmware>(`/api/devices/${deviceId}/firmware`);
   }
 }

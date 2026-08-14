@@ -93,3 +93,8 @@ export interface DeviceLinkSave {
   targetDeviceId: number;
   linkType: number;
 }
+
+export interface ControllerFirmware {
+  ino: string;
+  readme: string;
+}
