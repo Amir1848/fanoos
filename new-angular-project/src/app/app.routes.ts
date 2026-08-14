@@ -1,11 +1,23 @@
 import { Routes } from '@angular/router';
-import { authGuard, loginGuard } from './core/auth/auth.guard';
+import { authGuard, loginGuard, mobileAuthGuard, mobileLoginGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   {
     path: 'login',
     canActivate: [loginGuard],
     loadComponent: () => import('./features/login/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'm/login',
+    canActivate: [mobileLoginGuard],
+    loadComponent: () =>
+      import('./features/mobile/mobile-login.component').then((m) => m.MobileLoginComponent),
+  },
+  {
+    path: 'm',
+    canActivate: [mobileAuthGuard],
+    loadComponent: () =>
+      import('./features/mobile/mobile-home.component').then((m) => m.MobileHomeComponent),
   },
   {
     path: '',

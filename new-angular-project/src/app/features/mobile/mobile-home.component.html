@@ -1,0 +1,83 @@
+<div class="mob" (click)="closeEnvMenu()">
+  <div class="home-header">
+    <div class="env-select" (click)="toggleEnvMenu($event)">
+      <span>{{ selectedEnv?.name ?? '—' }}</span>
+      <span class="arrow" [class.open]="envMenuOpen()">▼</span>
+    </div>
+    <button class="refresh-btn" type="button" (click)="refresh()" [disabled]="loading()">
+      <span class="refresh-icon" [class.spinning]="loading()">⟳</span>
+    </button>
+  </div>
+
+  @if (envMenuOpen()) {
+    <div class="env-backdrop" (click)="closeEnvMenu()"></div>
+    <div class="env-menu" (click)="$event.stopPropagation()">
+      @for (env of environments(); track env.id) {
+        <div
+          class="mi"
+          [class.active]="env.id === selectedEnvId()"
+          (click)="pickEnv(env)"
+        >
+          <span>{{ env.name }}</span>
+          @if (env.id === selectedEnvId()) {
+            <span class="check">✓</span>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @if (loading() && circuits().length === 0) {
+    <div class="empty">در حال بارگذاری…</div>
+  } @else if (circuits().length === 0) {
+    <div class="empty">مداری ثبت نشده است</div>
+  } @else {
+    <div class="section-title">مدارها</div>
+    <div class="circuits">
+      @for (circuit of circuits(); track circuit.id) {
+        <div
+          class="circuit-row"
+          [class.is-on]="circuit.on"
+          [class.off-device]="circuit.known && !circuit.online"
+          (click)="toggle(circuit)"
+        >
+          <div class="bulb">💡</div>
+          <div class="circuit-info">
+            <div class="circuit-name">{{ circuit.name }}</div>
+            <div class="circuit-status">
+              @if (!circuit.known) {
+                <span class="dot unknown"></span> ناشناخته
+              } @else if (circuit.online) {
+                <span class="dot online"></span> {{ circuit.on ? 'روشن' : 'خاموش' }}
+              } @else {
+                <span class="dot offline"></span> قطع
+              }
+            </div>
+          </div>
+          <div class="switch"></div>
+        </div>
+      }
+    </div>
+
+    @if (offlineCount() > 0) {
+      <div class="pending-note">
+        ⏳ {{ offlineCount() }} دستگاه در دسترس نیست — فرمان بعد از اتصال اعمال می‌شود
+      </div>
+    }
+  }
+
+  @if (sensors().length > 0) {
+    <div class="section-title">حسگرها</div>
+    <div class="sensors">
+      @for (sensor of sensors(); track sensor.id) {
+        <div class="sensor-card">
+          <div class="sensor-icon">🌡️</div>
+          <div class="sensor-value">{{ sensor.value ?? '—' }}</div>
+          <div class="sensor-name">
+            <span>{{ sensor.name }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

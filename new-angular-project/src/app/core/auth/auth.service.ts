@@ -62,6 +62,8 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(TOKEN_KEY);
     this.tokenSignal.set(null);
-    this.router.navigate(['/login']);
+    // Stay inside the area the user came from (mobile PWA vs admin panel).
+    const mobile = this.router.url.startsWith('/m');
+    this.router.navigate([mobile ? '/m/login' : '/login']);
   }
 }

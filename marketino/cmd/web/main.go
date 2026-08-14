@@ -1,6 +1,7 @@
 package main
 
 import (
+	"mime"
 	"net/http/httputil"
 	"net/url"
 
@@ -10,6 +11,10 @@ import (
 )
 
 func main() {
+	// Ensure the PWA manifest gets a JSON MIME type regardless of the host's
+	// mime.types (browsers reject manifests served as octet-stream).
+	_ = mime.AddExtensionType(".webmanifest", "application/manifest+json")
+
 	r := gin.Default()
 
 	api := r.Group("/api")

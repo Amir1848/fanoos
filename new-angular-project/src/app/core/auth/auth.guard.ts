@@ -15,3 +15,18 @@ export const loginGuard: CanActivateFn = () => {
 
   return auth.isAuthenticated() ? router.createUrlTree(['/']) : true;
 };
+
+/** Guards for the mobile PWA area (/m) — redirect within the area. */
+export const mobileAuthGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+
+  return auth.isAuthenticated() ? true : router.createUrlTree(['/m/login']);
+};
+
+export const mobileLoginGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+
+  return auth.isAuthenticated() ? router.createUrlTree(['/m']) : true;
+};

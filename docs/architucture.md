@@ -11,7 +11,7 @@ Marketino is a home automation platform. Users define a home's electrical/device
 | Component | Responsibility | Language / Stack | Repo Location | Status |
 |---|---|---|---|---|
 | Backend server | User management, personal access tokens, environment/home-architecture definitions, ESP32 program generation, MQTT API, serves the built frontend | Go | `/marketino` | Active |
-| Frontend application | UI for managing users, environments, and home architecture; talks to the backend server | Angular | `/new-angular-project` | Active |
+| Frontend application | UI for managing users, environments, and home architecture; talks to the backend server; also hosts the mobile PWA (see below) | Angular | `/new-angular-project` | Active |
 | MQTT broker | Message bus between the backend and ESP32 devices | Eclipse Mosquitto (Docker image) | — | Planned |
 | ESP32 firmware | Executes the compiled home-architecture program on-device; publishes/subscribes to MQTT topics | C/C++ (Arduino) | `/firmware/controller` | Active |
 | PostgreSQL database | Persistent storage for the backend server | PostgreSQL | — | Active — see §5 |
@@ -33,6 +33,15 @@ flowchart LR
 2. The backend persists all definitions (users, tokens, environments, device layouts) in PostgreSQL.
 3. The backend compiles a home-architecture definition into an executable program for the target ESP32 device.
 4. At runtime, the backend and ESP32 exchange commands/state over MQTT via the Mosquitto broker (backend never talks to a device directly over TCP).
+
+### Mobile PWA (installable web app)
+
+The mobile experience is a PWA built into the same Angular app — no separate codebase:
+
+- Routes: `/m` (home) and `/m/login`, components in `/new-angular-project/src/app/features/mobile`, dark RTL design per `docs/mobile-app-mockup.html`. Scope: login, environment picker, light-circuit toggles (optimistic UI, commands via `POST /api/devices/command/light`, state reconciled by polling `/api/devices/:id/state/light` every 3 s while visible), and sensor cards once the backend supports sensor devices.
+- Auth is shared with the admin panel (same JWT in `localStorage`); the 401 interceptor logs out to the matching area's login (`/m/login` vs `/login`).
+- PWA files live in `/new-angular-project/public`: `manifest.webmanifest` (fa/rtl, `start_url: /m`), PNG icons, and a **hand-written service worker** `sw.js` (registered in `src/main.ts` in production builds only — `@angular/service-worker` was not installable because the npm registry was unreachable). Caching strategy: navigations network-first with offline fallback to the cached shell; hashed static assets cache-first; `GET /api/devices/:id/state/*` network-first with a 3 s timeout falling back to the last cached response; everything else (POSTs) network-only.
+- Serving requirements: HTTPS (or localhost), `sw.js` at the origin root (it is), and `.webmanifest` with a JSON MIME type (registered explicitly in `marketino/cmd/web/main.go`).
 
 ## 4. Backend Server (`/marketino`)
 
