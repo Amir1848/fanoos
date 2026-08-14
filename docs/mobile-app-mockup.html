@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketino — Mobile App Mockup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1d24;
+    font-family: "Vazirmatn", Tahoma, "Segoe UI", sans-serif;
+    display: flex;
+    gap: 48px;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 48px 24px;
+    flex-wrap: wrap;
+    min-height: 100vh;
+  }
+
+  .screen-label {
+    color: #8b93a7;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+  }
+
+  /* ===== Phone frame ===== */
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: #0d0f14;
+    border-radius: 44px;
+    border: 10px solid #262a33;
+    box-shadow: 0 24px 64px rgba(0,0,0,.6);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .statusbar {
+    height: 44px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 28px;
+    color: #e8ebf2;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .notch {
+    position: absolute;
+    top: 10px; left: 50%;
+    transform: translateX(-50%);
+    width: 120px; height: 28px;
+    background: #262a33;
+    border-radius: 16px;
+    z-index: 10;
+  }
+
+  .content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+
+  /* ===== Colors ===== */
+  :root {
+    --bg: #0d0f14;
+    --card: #171a22;
+    --card2: #1e222c;
+    --accent: #f5b942;   /* gold — matches the light node color */
+    --accent2: #4f8cff;  /* blue — matches the controller node color */
+    --text: #e8ebf2;
+    --muted: #8b93a7;
+    --ok: #3ddc84;
+    --danger: #ff5c5c;
+  }
+
+  /* =========== LOGIN SCREEN =========== */
+  .login-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 32px;
+    gap: 0;
+  }
+
+  .logo {
+    width: 88px; height: 88px;
+    margin: 0 auto 16px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #f5b942, #e08a1e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    box-shadow: 0 12px 32px rgba(245,185,66,.25);
+  }
+
+  .app-title {
+    text-align: center;
+    color: var(--text);
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .app-subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 40px;
+  }
+
+  .field {
+    margin-bottom: 16px;
+  }
+
+  .field label {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid #2a2f3b;
+    border-radius: 14px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .2s;
+  }
+
+  .field input:focus { border-color: var(--accent); }
+
+  .login-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #1a1d24;
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+
+  .login-btn:active { transform: scale(.98); }
+
+  .login-hint {
+    margin-top: 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+  /* =========== HOME SCREEN =========== */
+  .home-header {
+    padding: 12px 20px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .env-select {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card); border: 1px solid #2a2f3b;
+    border-radius: 12px; padding: 8px 12px;
+    color: var(--text); font-size: 17px; font-weight: 700;
+    font-family: inherit; cursor: pointer;
+  }
+  .env-select .arrow { color: var(--muted); font-size: 11px; }
+
+  .env-menu {
+    position: absolute; top: 64px; right: 20px; left: 20px;
+    background: var(--card2); border: 1px solid #2a2f3b;
+    border-radius: 16px; padding: 6px; z-index: 20;
+    box-shadow: 0 16px 40px rgba(0,0,0,.5);
+  }
+
+  .env-menu .mi {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 14px; border-radius: 12px;
+    color: var(--text); font-size: 15px; cursor: pointer;
+  }
+  .env-menu .mi:hover, .env-menu .mi:active { background: #262b37; }
+  .env-menu .mi .cnt { color: var(--muted); font-size: 12px; }
+  .env-menu .mi.active { color: var(--accent); font-weight: 700; }
+
+  .env-backdrop {
+    position: absolute; inset: 0; z-index: 15;
+  }
+
+  .home-header h1 {
+    color: var(--text);
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .refresh-btn {
+    width: 38px; height: 38px;
+    border-radius: 12px;
+    background: var(--card);
+    border: 1px solid #2a2f3b;
+    color: var(--muted);
+    font-size: 17px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .section-title {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #232836;
+  }
+
+  .circuits {
+    padding: 4px 16px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .circuit-row {
+    background: var(--card);
+    border: 1px solid #232836;
+    border-radius: 18px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+
+  .circuit-row:active { background: var(--card2); }
+
+  .circuit-row.off-device { opacity: .45; }
+
+  .bulb {
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background: rgba(245,185,66,.15);
+    flex-shrink: 0;
+  }
+
+  .circuit-row.is-on .bulb { background: var(--accent); }
+
+  .circuit-info { flex: 1; min-width: 0; }
+
+  .circuit-name {
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .circuit-status {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .dot.online { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+  .dot.offline { background: var(--danger); }
+
+  /* toggle switch */
+  .switch {
+    width: 56px; height: 32px;
+    border-radius: 16px;
+    background: #2a2f3b;
+    position: relative;
+    transition: background .2s;
+    flex-shrink: 0;
+  }
+
+  .switch::after {
+    content: "";
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #8b93a7;
+    transition: all .2s;
+  }
+
+  .is-on .switch { background: var(--accent); }
+  .is-on .switch::after {
+    right: 28px;
+    background: #1a1d24;
+  }
+
+  /* sensors */
+  .sensors {
+    padding: 4px 16px 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .sensor-card {
+    background: var(--card);
+    border: 1px solid #232836;
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sensor-icon {
+    width: 38px; height: 38px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    background: rgba(79,140,255,.15);
+  }
+
+  .sensor-value {
+    color: var(--text);
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .sensor-value small {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--muted);
+    margin-right: 3px;
+  }
+
+  .sensor-name {
+    color: var(--muted);
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .pending-note {
+    margin: 4px 20px 20px;
+    padding: 10px 14px;
+    background: rgba(245,185,66,.08);
+    border: 1px dashed rgba(245,185,66,.4);
+    border-radius: 12px;
+    color: var(--accent);
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .home-indicator {
+    height: 22px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .home-indicator::after {
+    content: "";
+    width: 130px; height: 5px;
+    border-radius: 3px;
+    background: #2a2f3b;
+  }
+</style>
+<script>
+  function toggleEnvMenu(e) {
+    e.stopPropagation();
+    const menu = document.getElementById('envMenu');
+    const backdrop = document.getElementById('envBackdrop');
+    const open = menu.style.display !== 'none';
+    menu.style.display = open ? 'none' : 'block';
+    backdrop.style.display = open ? 'none' : 'block';
+    document.getElementById('envArrow').textContent = open ? '▼' : '▲';
+  }
+  function closeEnvMenu() {
+    document.getElementById('envMenu').style.display = 'none';
+    document.getElementById('envBackdrop').style.display = 'none';
+    document.getElementById('envArrow').textContent = '▼';
+  }
+  function pickEnv(el, name) {
+    document.querySelectorAll('#envMenu .mi').forEach(m => m.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('envName').textContent = name;
+    closeEnvMenu();
+  }
+</script>
+</head>
+<body>
+
+<!-- ================= SCREEN 1: LOGIN ================= -->
+<div>
+  <div class="screen-label">۱ — صفحه ورود / Login</div>
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="statusbar"><span>۹:۴۱</span><span>📡 🔋</span></div>
+    <div class="content">
+      <div class="login-content">
+        <div class="logo">💡</div>
+        <div class="app-title">مارکتینو</div>
+        <div class="app-subtitle">کنترل هوشمند خانه</div>
+
+        <div class="field">
+          <label>نام کاربری</label>
+          <input type="text" placeholder="admin" dir="ltr" style="text-align:left">
+        </div>
+        <div class="field">
+          <label>رمز عبور</label>
+          <input type="password" placeholder="••••••••" dir="ltr" style="text-align:left">
+        </div>
+
+        <button class="login-btn">ورود</button>
+
+        <div class="login-hint">
+          نشست ۲۴ ساعت اعتبار دارد؛ پس از آن دوباره وارد شوید.
+        </div>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+</div>
+
+<!-- ================= SCREEN 2: HOME ================= -->
+<div>
+  <div class="screen-label">۲ — صفحه اصلی / Circuits + Sensors</div>
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="statusbar"><span>۹:۴۱</span><span>📶 🔋</span></div>
+    <div class="content">
+      <div class="home-header">
+        <div class="env-select" id="envSelect" onclick="toggleEnvMenu(event)">
+          <span id="envName">خانه</span>
+          <span class="arrow" id="envArrow">▼</span>
+        </div>
+        <button class="refresh-btn">⟳</button>
+      </div>
+
+      <div class="env-backdrop" id="envBackdrop" onclick="closeEnvMenu()" style="display:none"></div>
+      <div class="env-menu" id="envMenu" style="display:none">
+        <div class="mi active" onclick="pickEnv(this, 'خانه')">خانه <span class="cnt">۴ مدار</span></div>
+        <div class="mi" onclick="pickEnv(this, 'ویلا')">ویلا <span class="cnt">۶ مدار</span></div>
+        <div class="mi" onclick="pickEnv(this, 'دفتر')">دفتر <span class="cnt">۲ مدار</span></div>
+      </div>
+
+      <div class="section-title">مدارها</div>
+      <div class="circuits">
+        <div class="circuit-row is-on" onclick="this.classList.toggle('is-on')">
+          <div class="bulb">💡</div>
+          <div class="circuit-info">
+            <div class="circuit-name">چراغ آشپزخانه</div>
+            <div class="circuit-status">
+              <span class="dot online"></span> روشن
+            </div>
+          </div>
+          <div class="switch"></div>
+        </div>
+
+        <div class="circuit-row" onclick="this.classList.toggle('is-on')">
+          <div class="bulb">💡</div>
+          <div class="circuit-info">
+            <div class="circuit-name">چراغ راهرو</div>
+            <div class="circuit-status">
+              <span class="dot online"></span> خاموش · ۱۵ دقیقه پیش
+            </div>
+          </div>
+          <div class="switch"></div>
+        </div>
+
+        <div class="circuit-row" onclick="this.classList.toggle('is-on')">
+          <div class="bulb">💡</div>
+          <div class="circuit-info">
+            <div class="circuit-name">چراغ اتاق خواب</div>
+            <div class="circuit-status">
+              <span class="dot online"></span> خاموش · ۱ ساعت پیش
+            </div>
+          </div>
+          <div class="switch"></div>
+        </div>
+
+        <div class="circuit-row off-device">
+          <div class="bulb">💡</div>
+          <div class="circuit-info">
+            <div class="circuit-name">چراغ حیاط</div>
+            <div class="circuit-status">
+              <span class="dot offline"></span> خاموش · قطع
+            </div>
+          </div>
+          <div class="switch"></div>
+        </div>
+      </div>
+
+      <div class="pending-note">⏳ چراغ حیاط در دسترس نیست — فرمان بعد از اتصال اعمال می‌شود</div>
+
+      <div class="section-title">حسگرها</div>
+      <div class="sensors">
+        <div class="sensor-card">
+          <div class="sensor-icon">🌡️</div>
+          <div class="sensor-value">۲۴٫۱<small>°C</small></div>
+          <div class="sensor-name"><span>دما</span><span>۲ دقیقه پیش</span></div>
+        </div>
+        <div class="sensor-card">
+          <div class="sensor-icon">💧</div>
+          <div class="sensor-value">۴۱<small>%</small></div>
+          <div class="sensor-name"><span>رطوبت</span><span>۲ دقیقه پیش</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+</div>
+
+</body>
+</html>
