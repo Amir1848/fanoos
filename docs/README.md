@@ -37,6 +37,7 @@ The central server is responsible for:
 * MQTT communication
 * State synchronization
 * APIs for mobile/web applications
+* Natural-language assistant (LLM-based, planned — see Future Features)
 
 The server is implemented in **Go (Golang)**. See [`architucture.md`](architucture.md) for the concrete component/data-flow/database design.
 
@@ -133,6 +134,7 @@ Planned capabilities include:
 
 * Scheduling
 * Automation rules
+* **LLM-powered assistant** — users type (and later speak) commands like "turn on the kitchen light"; the server sends the text to a cheap tool-calling LLM (e.g. DeepSeek, or a local model for privacy), and the LLM invokes existing device APIs as tools. Voice input (STT) can be bolted on later without changing the pipeline.
 * Scene management
 * Energy monitoring
 * OTA firmware updates
