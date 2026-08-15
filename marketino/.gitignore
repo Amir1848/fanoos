@@ -1,6 +1,9 @@
 # Mac OS X files
 .DS_Store
 
+# Local environment files (never commit credentials)
+.env
+
 # Binaries for programs and plugins
 *.exe
 *.exe~

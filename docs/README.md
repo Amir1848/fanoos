@@ -37,7 +37,7 @@ The central server is responsible for:
 * MQTT communication
 * State synchronization
 * APIs for mobile/web applications
-* Natural-language assistant (LLM-based, planned — see Future Features)
+* Natural-language assistant — LLM chat implemented (see architecture doc §9); tool-based device control planned
 
 The server is implemented in **Go (Golang)**. See [`architucture.md`](architucture.md) for the concrete component/data-flow/database design.
 

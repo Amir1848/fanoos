@@ -1,0 +1,65 @@
+<div class="mob">
+  <div class="chat-header">
+    <button class="icon-btn" type="button" (click)="back()">→</button>
+    <div class="chat-title">
+      <span class="chat-avatar">🤖</span>
+      <span>دستیار هوشمند</span>
+    </div>
+    <button class="icon-btn" type="button" (click)="clear()" [disabled]="messages().length === 0">🗑</button>
+  </div>
+
+  <div class="chat-body" #scroller>
+    @if (messages().length === 0) {
+      <div class="chat-empty">
+        <div class="chat-empty-icon">💬</div>
+        <div class="chat-empty-title">گفت‌وگو با دستیار</div>
+        <div class="chat-empty-sub">هر سوالی داری بپرس — متن بنویس و بفرست</div>
+      </div>
+    } @else {
+      @for (msg of messages(); track $index) {
+        <div class="bubble-row" [class.from-user]="msg.role === 'user'">
+          <div class="bubble">
+            <span class="bubble-text">{{ msg.content }}</span>
+            @if (msg.actions?.length) {
+              <div class="bubble-actions">
+                @for (action of msg.actions; track $index) {
+                  <span class="action-chip" [class.fail]="!action.ok">{{ action.text }}</span>
+                }
+              </div>
+            }
+            @if (
+              msg.role === 'assistant' &&
+              msg.content === '' &&
+              !msg.actions?.length &&
+              sending() &&
+              $index === messages().length - 1
+            ) {
+              <span class="typing"><span></span><span></span><span></span></span>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    @if (error()) {
+      <div class="chat-error">{{ error() }}</div>
+    }
+  </div>
+
+  <div class="chat-input">
+    <input
+      type="text"
+      [value]="draft()"
+      (input)="updateDraft($any($event.target).value)"
+      (keydown.enter)="send()"
+      placeholder="پیام خود را بنویسید…"
+      [disabled]="sending()"
+      autocomplete="off"
+    />
+    @if (sending()) {
+      <button class="send-btn stop" type="button" (click)="stop()">■</button>
+    } @else {
+      <button class="send-btn" type="button" (click)="send()" [disabled]="draft().trim() === ''">↑</button>
+    }
+  </div>
+</div>

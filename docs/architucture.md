@@ -15,7 +15,7 @@ Marketino is a home automation platform. Users define a home's electrical/device
 | MQTT broker | Message bus between the backend and ESP32 devices | Eclipse Mosquitto (Docker image) | — | Planned |
 | ESP32 firmware | Executes the compiled home-architecture program on-device; publishes/subscribes to MQTT topics | C/C++ (Arduino) | `/firmware/controller` | Active |
 | PostgreSQL database | Persistent storage for the backend server | PostgreSQL | — | Active — see §5 |
-| Assistant LLM | Interprets natural-language commands and calls device APIs as tools (backend-side only) | External API (e.g. DeepSeek) or self-hosted Ollama | — | Planned — see §9 |
+| Assistant LLM | Chat/assistant text backend: relays user conversation to an OpenAI-compatible LLM API (device tool-calling planned) | External API (OpenAI-compatible, default DeepSeek via reverse proxy) | — | Active (text chat) — see §9 |
 
 ## 3. Data Flow
 
@@ -39,7 +39,7 @@ flowchart LR
 
 The mobile experience is a PWA built into the same Angular app — no separate codebase:
 
-- Routes: `/m` (home) and `/m/login`, components in `/new-angular-project/src/app/features/mobile`, dark RTL design per `docs/mobile-app-mockup.html`. Scope: login, environment picker, light-circuit toggles (optimistic UI, commands via `POST /api/devices/command/light`, state reconciled by polling `/api/devices/:id/state/light` every 3 s while visible), and sensor cards once the backend supports sensor devices.
+- Routes: `/m` (home), `/m/chat` (assistant chat), and `/m/login`, components in `/new-angular-project/src/app/features/mobile`, dark RTL design per `docs/mobile-app-mockup.html`. Scope: login, environment picker, light-circuit toggles (optimistic UI, commands via `POST /api/devices/command/light`, state reconciled by polling `/api/devices/:id/state/light` every 3 s while visible), sensor cards once the backend supports sensor devices, and an assistant chat page (`/m/chat`, opened via the 💬 header button) that streams replies from `POST /api/assistant/chat` (SSE), renders executed device commands (`{"action": …}` events) as inline chips, and keeps the conversation in `localStorage` (`marketino.mobile.chat`, last 100 messages).
 - Auth is shared with the admin panel (same JWT in `localStorage`); the 401 interceptor logs out to the matching area's login (`/m/login` vs `/login`).
 - PWA files live in `/new-angular-project/public`: `manifest.webmanifest` (fa/rtl, `start_url: /m`), PNG icons, and a **hand-written service worker** `sw.js` (registered in `src/main.ts` in production builds only — `@angular/service-worker` was not installable because the npm registry was unreachable). Caching strategy: navigations network-first with offline fallback to the cached shell; hashed static assets cache-first; `GET /api/devices/:id/state/*` network-first with a 3 s timeout falling back to the last cached response; everything else (POSTs) network-only.
 - Serving requirements: HTTPS (or localhost), `sw.js` at the origin root (it is), and `.webmanifest` with a JSON MIME type (registered explicitly in `marketino/cmd/web/main.go`).
@@ -55,7 +55,7 @@ The mobile experience is a PWA built into the same Angular app — no separate c
   - MQTT client/API for communicating with ESP32 devices through the broker. The client lives in `/marketino/utils/mqttutils`, connects on process startup (auto-reconnecting, non-fatal if the broker is briefly unavailable), and is used by domain packages like `device` to publish commands. `POST /api/devices/command/light` (body: `{deviceId, on}`) looks up the device's environment/GUID/type and publishes `{"on":bool}` to its `cmd` topic. The client also subscribes to every device's `state` topic (`home/+/device/+/state`); each message is persisted to the `device_states` table (keyed by device GUID) via a handler the `device` package registers with `mqttutils.SetStateHandler`, rather than being cached in memory — this keeps state readable/consistent no matter which backend instance handles a given request (running multiple instances still needs a unique `MQTT_CLIENT_ID` per instance, which is not yet solved). `GET /api/devices/:id/state/light` reads that table for a given device (`{on, online, ts, known}`, where `known` is false until a `device_states` row exists for it). `GET /api/devices/:id/state/controller` is the analogous read for a controller — same table, but returns `{online, ts, known}` only, since controllers have no `on` concept (`is_on` is meaningless for them and intentionally omitted).
   - Firmware source generation: `GET /api/devices/:id/firmware` returns `{ino, readme}` for a controller device (the environment editor's "get source code" action). The `internal/app/firmware` package renders two embedded Go `text/template`s (`templates/controller.ino.tmpl`, `templates/README.md.tmpl`) over the controller's linked toggle circuits — the same sketch shape as `/firmware/controller/controller.ino`, with identity/GUIDs baked in from the database and per-circuit GPIOs allocated from a fixed, deterministic pin plan (circuit 1 on the built-in LED, GPIO 2; one output+button pair per circuit; controller button on GPIO 4; max 8 circuits). WiFi/broker settings are placeholders the installer edits in a marked `USER CONFIGURATION` block. The README documents the wiring plan (pins, buttons, relay polarity, power) and how to reorder circuits/remap pins in the generated `CIRCUITS[]` table.
   - Serves the built Angular frontend as static assets (single deployable artifact).
-  - Planned: natural-language AI assistant endpoint backed by an external/local LLM — see §9.
+  - AI assistant (chat + device tools): `POST /api/assistant/chat` (JWT-protected, body `{messages: [{role, content}]}`) — handler and device tool wiring in `/marketino/internal/app/assistant/tools`, provider loop in `/marketino/internal/app/assistant`. The backend prepends a system prompt containing the user's light inventory, declares `turn_light`/`get_light_state` tools, relays the conversation to an **OpenAI-compatible** `/chat/completions` endpoint with `stream: true`, executes the model's tool calls through the existing device services, and pipes everything back as Server-Sent Events: `data: {"delta": "…"}` per text chunk, `data: {"action": {…}}` per executed tool, optional `data: {"error": "…"}`, final `data: [DONE]` (≤5 tool rounds per request). Config via env vars only: `ASSISTANT_BASE_URL`, `ASSISTANT_API_KEY` (required — endpoint returns 503 until set), `ASSISTANT_MODEL` (default `deepseek/deepseek-v4-pro`). Requests to the provider include `Authorization: Bearer <key>`; the key never reaches the frontend. See §9.
 - Exposes a REST/HTTP API consumed by the Angular frontend.
 
 ## 5. Data Storage — PostgreSQL
@@ -84,8 +84,8 @@ Local development and simple production deployments use Docker Compose to run th
 Notes:
 - No Kubernetes is used for this project. The stack is small (single backend instance, single database, single broker) and does not need cluster orchestration.
 - `/compose.yml` (repo root) defines the stack. So far only `mosquitto` is wired up (config in `/mosquitto/config/mosquitto.conf`); `backend` and `postgres` services are still to be added.
-- Environment-specific configuration (DB credentials, MQTT broker address, token signing secrets) is injected via environment variables / `.env` files, not hardcoded.
-- Backend MQTT client config: `MQTT_BROKER_URL` (default `tcp://localhost:1883`), `MQTT_CLIENT_ID` (default `marketino-backend`).
+- Environment-specific configuration (DB credentials, MQTT broker address, token signing secrets) is injected via environment variables / `.env` files, not hardcoded. For local development, the backend also auto-loads a git-ignored `marketino/.env` at startup (`utils/envutils`, imported before the init-time env readers in `dbutils`/`mqttutils`); real environment variables always override file values.
+- Backend MQTT client config: `MQTT_BROKER_URL` (default `tcp://localhost:1883`), `MQTT_CLIENT_ID` (default `marketino-backend`). Assistant provider config: `ASSISTANT_BASE_URL`, `ASSISTANT_API_KEY`, `ASSISTANT_MODEL` (see §4).
 
 ## 7. ESP32 Firmware
 
@@ -110,27 +110,31 @@ Notes:
   - Per-device authentication and topic-level ACLs (a device should only access its own topics).
   - TLS for broker connections.
 
-## 9. AI Assistant (Planned)
+## 9. AI Assistant
 
-Natural-language control layer: the user types (later: speaks) something like "turn on the kitchen light", and the backend resolves it to real device commands via a tool-calling LLM. **Status: planned, not yet implemented.**
+Natural-language layer, implemented in two phases. **Status: phases 1 (text chat) and 2 (tool-calling device control) implemented.**
+
+**Phase 1 — text chat:** the mobile PWA's chat page (`/m/chat`) sends the conversation to `POST /api/assistant/chat`; the backend relays it to an OpenAI-compatible provider (config above) and streams the reply back over SSE.
+
+**Phase 2 — tool-calling device control:** the backend injects the user's light inventory (compact JSON: id, name, environment, last reported on/online state from `device_states`) into the system prompt and declares two function tools — `turn_light(deviceId, on)` and `get_light_state(deviceId)`, both executing through the same service functions as the REST API (`device.SendLightCommand` / `device.GetLightState`). When the model requests tool calls, the backend executes each one immediately, emits an `{"action": {...}}` SSE event (with a ready-made Persian summary like `💡 چراغ آشپزخانه روشن شد`) that the chat UI renders as an inline chip, feeds the JSON result back to the model as `role:"tool"` messages, and streams the follow-up reply. The loop runs at most 5 rounds per request. Code layout: `internal/app/assistant` is the pure provider loop (streaming, tool-call fragment reassembly, message sanitizing — no DB imports, unit-tested with an httptest fake); `internal/app/assistant/tools` owns the HTTP endpoint, the inventory query, tool schemas, and the device executor.
 
 ```mermaid
 flowchart LR
     User[User] -->|text, later voice| PWA[Angular PWA]
-    PWA -->|POST /api/assistant| Backend[Go Backend]
-    Backend -->|system prompt + tool schemas| LLM[LLM — DeepSeek API or local Ollama]
-    LLM -->|tool calls, e.g. turn_light deviceId on| Backend
-    Backend -->|executes via existing internal paths| MQTT[Existing device command/state flow]
-    Backend -->|reply + action result| PWA
+    PWA -->|POST /api/assistant/chat| Backend[Go Backend]
+    Backend -->|system prompt + inventory + tool schemas| LLM[OpenAI-compatible LLM — default DeepSeek via reverse proxy; local Ollama possible]
+    LLM -->|streamed tool_calls, e.g. turn_light deviceId on| Backend
+    Backend -->|executes via existing device services| MQTT[Existing device command/state flow]
+    Backend -->|SSE: deltas + action events| PWA
 ```
 
 Design decisions:
 
 - **Server-side only.** The ESP32 firmware and MQTT contract are untouched — devices keep working fully offline; the assistant is a pure backend layer over existing APIs. This preserves the project principle that smart features never reduce reliability.
-- **One endpoint:** `POST /api/assistant` (body: user text). It executes *as the requesting user* (same JWT), so a user can only command devices in their own environments. The LLM never gets a privileged/god token.
+- **Auth:** the chat endpoint executes *as the requesting user* (same JWT). Note: environments have no per-user ownership yet, so — like `POST /api/devices/command/light` — the assistant can command any environment's devices; scoping waits on the ownership model. The LLM never gets a privileged/god token (it only receives tool *results*, never backend credentials).
 - **Tools are the existing APIs.** The tool-calling format just needs a JSON schema per tool; v1 tool set is deliberately tiny: `turn_light(deviceId, on)` (wraps the same logic as `POST /api/devices/command/light`) and `get_light_state(deviceId)`. Fewer tools → fewer hallucinated calls.
 - **Entity resolution:** environments are small, so the backend injects the user's device inventory (room names, device labels, GUIDs, current states) into the system prompt as compact JSON; the LLM picks the right GUID in one shot. Only add a `list_devices` tool if environments grow large.
-- **Provider abstraction:** the tool-calling wire format is nearly identical across OpenAI-compatible APIs, so config chooses cloud (DeepSeek) or local (Ollama, e.g. qwen2.5) — users who don't want their home layout in a third-party cloud can run fully local. Config via environment variables (`ASSISTANT_PROVIDER`, `ASSISTANT_BASE_URL`, `ASSISTANT_API_KEY`), never hardcoded.
+- **Provider abstraction:** the wire format is OpenAI-compatible across providers, so config chooses cloud (default: DeepSeek through the `open-router-reverse` proxy) or local (Ollama, e.g. qwen2.5) — users who don't want their home layout in a third-party cloud can run fully local. Config via environment variables (`ASSISTANT_BASE_URL`, `ASSISTANT_API_KEY`, `ASSISTANT_MODEL`), never hardcoded.
 - **Latency:** stream the LLM reply to the frontend and execute each tool call as soon as it's parsed — don't wait for the full response text.
 - **Confirm/act pattern:** the LLM returns intent, the backend executes and reports the result ("Turned on kitchen light ✓"). This gate is in place for when irreversible device types (locks, heating) arrive.
 - **Voice later:** STT (Web Speech API in the PWA, or Whisper server-side) feeds the same text pipeline — nothing downstream changes.

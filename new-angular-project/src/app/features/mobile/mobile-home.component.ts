@@ -1,4 +1,5 @@
 import { Component, DestroyRef, inject, signal, computed } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { forkJoin, of, switchMap, timer } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EnvironmentListItem } from '../../core/api/models';
@@ -25,7 +26,7 @@ const POLL_MS = 3000;
 @Component({
   selector: 'app-mobile-home',
   standalone: true,
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './mobile-home.component.html',
   styleUrl: './mobile-home.component.scss',
 })

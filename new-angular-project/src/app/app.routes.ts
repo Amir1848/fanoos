@@ -20,6 +20,12 @@ export const routes: Routes = [
       import('./features/mobile/mobile-home.component').then((m) => m.MobileHomeComponent),
   },
   {
+    path: 'm/chat',
+    canActivate: [mobileAuthGuard],
+    loadComponent: () =>
+      import('./features/mobile/mobile-chat.component').then((m) => m.MobileChatComponent),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     loadComponent: () => import('./features/shell/shell.component').then((m) => m.ShellComponent),

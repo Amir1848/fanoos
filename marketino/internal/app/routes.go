@@ -1,6 +1,7 @@
 package app
 
 import (
+	assistanttools "github.com/amir1848/marketino/internal/app/assistant/tools"
 	"github.com/amir1848/marketino/internal/app/auth"
 	"github.com/amir1848/marketino/internal/app/device"
 	"github.com/amir1848/marketino/internal/app/devicelink"
@@ -27,6 +28,7 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	device.RegisterRoutes(protected)
 	devicelink.RegisterRoutes(protected)
 	firmware.RegisterRoutes(protected)
+	assistanttools.RegisterRoutes(protected)
 }
 
 func RegisterDataviews(r *gin.RouterGroup) {

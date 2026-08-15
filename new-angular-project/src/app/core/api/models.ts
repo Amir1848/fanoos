@@ -98,3 +98,20 @@ export interface ControllerFirmware {
   ino: string;
   readme: string;
 }
+
+export type ChatRole = 'user' | 'assistant' | 'system';
+
+/** A tool the assistant executed (e.g. a light was turned on), rendered inline. */
+export interface ChatAction {
+  tool: string;
+  deviceId?: number;
+  deviceName?: string;
+  text: string;
+  ok: boolean;
+}
+
+export interface ChatMessage {
+  role: ChatRole;
+  content: string;
+  actions?: ChatAction[];
+}

@@ -11,6 +11,9 @@ import (
 	"strings"
 	"time"
 
+	// Loaded first (dependency order guarantees it initializes before this
+	// package's init()): makes .env variables available to the MQTT_* reads below.
+	_ "github.com/amir1848/marketino/utils/envutils"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/google/uuid"
 )

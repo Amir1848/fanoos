@@ -34,7 +34,7 @@ func ValidateToken(tokenString string) (*Claims, error) {
 		return jwtSecret, nil
 	})
 
-	if err != nil {
+	if err != nil {  
 		return nil, err
 	}
 

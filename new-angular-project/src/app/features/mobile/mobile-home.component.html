@@ -4,9 +4,12 @@
       <span>{{ selectedEnv?.name ?? '—' }}</span>
       <span class="arrow" [class.open]="envMenuOpen()">▼</span>
     </div>
-    <button class="refresh-btn" type="button" (click)="refresh()" [disabled]="loading()">
-      <span class="refresh-icon" [class.spinning]="loading()">⟳</span>
-    </button>
+    <div class="header-actions">
+      <a class="icon-link" routerLink="/m/chat" title="دستیار هوشمند">💬</a>
+      <button class="refresh-btn" type="button" (click)="refresh()" [disabled]="loading()">
+        <span class="refresh-icon" [class.spinning]="loading()">⟳</span>
+      </button>
+    </div>
   </div>
 
   @if (envMenuOpen()) {

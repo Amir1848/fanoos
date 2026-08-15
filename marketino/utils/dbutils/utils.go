@@ -6,6 +6,9 @@ import (
 	"os"
 	"time"
 
+	// Loaded first (dependency order guarantees it initializes before this
+	// package's init()): makes .env variables available to the DB_* reads below.
+	_ "github.com/amir1848/marketino/utils/envutils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
