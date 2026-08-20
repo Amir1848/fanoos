@@ -21,6 +21,7 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	protected.Use(auth.JWTMiddleware())
 
 	patoken.RegisterRoutes(protected)
+	auth.RegisterProtectedRoutes(protected)
 	role.RegisterRoutes(protected)
 	roleresource.RegisterRoutes(protected)
 	users.RegisterRoutes(protected)

@@ -3,12 +3,17 @@ package dataviews
 import (
 	"net/http"
 
+	"github.com/amir1848/fanoos/internal/app/auth"
 	"github.com/amir1848/fanoos/utils/dbutils"
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterRoute[K, Y any](routerGroup *gin.RouterGroup, info *DataviewModel[K, Y]) {
 	g := routerGroup.Group("/dataviews")
+
+	if info.ResourceKey != "" {
+		g.Use(auth.RequireResource(info.ResourceKey))
+	}
 
 	g.POST(info.DataviewKey, func(ctx *gin.Context) {
 		c := ctx.Request.Context()

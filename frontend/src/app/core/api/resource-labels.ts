@@ -8,6 +8,7 @@ export const RESOURCE_LABELS: Record<string, string> = {
   'users.delete': 'حذف کاربر',
   'users.view': 'مشاهده کاربران',
   'roles.create': 'ایجاد نقش',
+  'roles.update': 'ویرایش نقش',
   'roles.delete': 'حذف نقش',
   'roles.view': 'مشاهده نقش‌ها',
 };

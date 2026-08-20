@@ -4,7 +4,7 @@
       نقش جدید
       <span class="page-subtitle">تعریف نقش کاربری در سامانه</span>
     } @else {
-      مشاهده نقش
+      ویرایش نقش
       @if (role(); as r) {
         <span class="page-subtitle">{{ r.title }}</span>
       }
@@ -21,16 +21,14 @@
         حذف نقش
       </button>
     }
-    @if (isNew()) {
-      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
-        @if (saving()) {
-          <span class="spinner"></span>
-        } @else {
-          <app-icon name="save" [size]="16" />
-        }
-        ذخیره
-      </button>
-    }
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
+      @if (saving()) {
+        <span class="spinner"></span>
+      } @else {
+        <app-icon name="save" [size]="16" />
+      }
+      ذخیره
+    </button>
   </div>
 </div>
 
@@ -45,7 +43,7 @@
   <form class="card entity-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
     <div class="form-grid">
       <div class="form-field">
-        <label for="title">عنوان نقش@if (isNew()) {<span class="req">*</span>}</label>
+        <label for="title">عنوان نقش<span class="req">*</span></label>
         <input
           id="title"
           type="text"
@@ -61,7 +59,7 @@
       </div>
 
       <div class="form-field">
-        <label for="code">کد نقش@if (isNew()) {<span class="req">*</span>}</label>
+        <label for="code">کد نقش<span class="req">*</span></label>
         <input
           id="code"
           type="text"

@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { AuthorizeDirective } from '../../core/auth/authorize.directive';
 import { ConfirmService } from '../../shared/confirm/confirm.service';
 import { IconComponent } from '../../shared/icon/icon.component';
 
@@ -10,12 +11,13 @@ interface NavItem {
   label: string;
   icon: string;
   link: string;
+  resource?: string;
 }
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, AuthorizeDirective],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
 })
@@ -27,8 +29,8 @@ export class ShellComponent {
 
   readonly navItems: NavItem[] = [
     { label: 'داشبورد', icon: 'dashboard', link: '/dashboard' },
-    { label: 'کاربران', icon: 'users', link: '/users' },
-    { label: 'نقش‌ها', icon: 'shield', link: '/roles' },
+    { label: 'کاربران', icon: 'users', link: '/users', resource: 'users.view' },
+    { label: 'نقش‌ها', icon: 'shield', link: '/roles', resource: 'roles.view' },
     { label: 'محیط‌ها', icon: 'home', link: '/environments' },
   ];
 

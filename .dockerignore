@@ -1,0 +1,18 @@
+.git
+.github
+docs
+firmware
+mosquitto
+
+# local dev artifacts
+frontend/node_modules
+frontend/dist
+frontend/.angular
+
+# multi-GB local model files (must never enter the build context)
+ggml-large-v3.bin
+ggml-medium.bin
+
+# secrets / local config
+fanoos/.env
+.env

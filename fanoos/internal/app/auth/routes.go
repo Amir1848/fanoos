@@ -55,6 +55,26 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	})
 }
 
+func RegisterProtectedRoutes(r *gin.RouterGroup) {
+	r.GET("/auth/resources", func(c *gin.Context) {
+		ctx := c.Request.Context()
+
+		userID, ok := c.Get("userId")
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization token required"})
+			return
+		}
+
+		keys, err := UserResourceKeys(ctx, userID.(int64))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load resources"})
+			return
+		}
+
+		c.JSON(http.StatusOK, keys)
+	})
+}
+
 func CheckPasswordHash(plainPassword, hashedPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
 	return err == nil // If no error, the password is correct

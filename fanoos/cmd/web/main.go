@@ -4,6 +4,8 @@ import (
 	"mime"
 	"net/http/httputil"
 	"net/url"
+	"os"
+	"path/filepath"
 
 	"github.com/amir1848/fanoos/internal/app"
 	_ "github.com/amir1848/fanoos/utils/dbutils"
@@ -23,8 +25,11 @@ func main() {
 		app.RegisterDataviews(api)
 	}
 
-	if true { //check with env
+	if os.Getenv("DEV_PROXY") != "" {
 		proxyTarget := "http://localhost:4201"
+		if target := os.Getenv("DEV_PROXY_TARGET"); target != "" {
+			proxyTarget = target
+		}
 		targetURL, _ := url.Parse(proxyTarget)
 
 		proxy := httputil.NewSingleHostReverseProxy(targetURL)
@@ -36,9 +41,13 @@ func main() {
 		})
 
 	} else {
-		r.Static("/static", "./assets")
 		r.NoRoute(func(c *gin.Context) {
-			c.File("./assets/index.html")
+			name := filepath.Join("assets", filepath.Clean("/"+c.Request.URL.Path))
+			if info, err := os.Stat(name); err == nil && !info.IsDir() {
+				c.File(name)
+				return
+			}
+			c.File(filepath.Join("assets", "index.html"))
 		})
 	}
 

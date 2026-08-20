@@ -43,7 +43,6 @@ export class RoleFormComponent implements OnInit {
     }
 
     this.isNew.set(false);
-    this.form.disable();
 
     const fromState = (history.state as { role?: RoleListItem }).role;
     if (fromState && fromState.id === +idParam) {
@@ -88,11 +87,34 @@ export class RoleFormComponent implements OnInit {
     const value = this.form.getRawValue();
 
     this.saving.set(true);
+
+    if (this.isNew()) {
+      this.rolesService
+        .create({ id: 0, title: value.title.trim(), code: value.code.trim() })
+        .subscribe({
+          next: () => {
+            this.toast.success('نقش با موفقیت ایجاد شد');
+            this.router.navigate(['/roles']);
+          },
+          error: (err) => {
+            this.saving.set(false);
+            this.toast.error(apiErrorMessage(err, 'خطا در ذخیره نقش'));
+          },
+        });
+      return;
+    }
+
+    const current = this.role();
+    if (!current) {
+      this.saving.set(false);
+      return;
+    }
+
     this.rolesService
-      .create({ id: 0, title: value.title.trim(), code: value.code.trim() })
+      .update({ id: current.id, title: value.title.trim(), code: value.code.trim() })
       .subscribe({
         next: () => {
-          this.toast.success('نقش با موفقیت ایجاد شد');
+          this.toast.success('نقش با موفقیت ویرایش شد');
           this.router.navigate(['/roles']);
         },
         error: (err) => {

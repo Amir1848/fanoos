@@ -15,6 +15,7 @@ func RegisterDataviews(r *gin.RouterGroup) {
 		Code  string `json:"code"`
 	}, struct{}]{
 		DataviewKey: "all-roles",
+		ResourceKey: ResourceView,
 		Query: func(ctx context.Context, db *gorm.DB, _ *struct{}) (*gorm.DB, error) {
 			return db.Table("roles").Select("*"), nil
 		},

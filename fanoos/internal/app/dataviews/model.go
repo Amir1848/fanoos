@@ -8,6 +8,7 @@ import (
 
 type DataviewModel[K, Y any] struct {
 	DataviewKey        string
+	ResourceKey        string
 	Query              func(context.Context, *gorm.DB, *Y) (*gorm.DB, error)
 	ModelForPatch      K
 	ModelForParameters Y

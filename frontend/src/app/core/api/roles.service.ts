@@ -21,6 +21,10 @@ export class RolesService {
     return this.http.post<{ id: number }>('/api/roles/create', role);
   }
 
+  update(role: RoleSave): Observable<void> {
+    return this.http.post<void>('/api/roles/update', role);
+  }
+
   delete(ids: number[]): Observable<void> {
     return this.http.post<void>('/api/roles/delete', { ids });
   }

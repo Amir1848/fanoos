@@ -27,18 +27,31 @@ func CreateRole(ctx context.Context, role *Role) (int64, error) {
 	return roleID, nil
 }
 
-func DeleteRole(ctx context.Context, ids []int64) error {
+func UpdateRole(ctx context.Context, role *Role) error {
+	return dbutils.Transaction(func(tx *gorm.DB) error {
+		return tx.Exec(
+			`UPDATE roles SET title = ?, code = ? WHERE id = ?`,
+			role.Title, role.Code, role.ID,
+		).Error
+	})
+}
+
+func DeleteRole(ctx context.Context, ids []int64) (int64, error) {
+	var deleted int64
+
 	err := dbutils.Transaction(func(tx *gorm.DB) error {
-		err := tx.Exec(`DELETE FROM roles WHERE id IN (?)`, ids).Error
-		if err != nil {
-			return err
+		result := tx.Exec(`DELETE FROM roles WHERE id IN (?)`, ids)
+		if result.Error != nil {
+			return result.Error
 		}
+
+		deleted = result.RowsAffected
 
 		return nil
 	})
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return deleted, nil
 }
