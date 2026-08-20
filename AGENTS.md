@@ -14,7 +14,7 @@ The architecture doc describes what each part of the system does and where it li
 ## Repo Layout
 
 - `/fanoos` — Go backend server.
-- `/new-angular-project` — Angular frontend.
+- `/frontend` — Angular frontend.
 - `/docs` — architecture and feature documentation.
 - `/compose.yml` + `/mosquitto` — Docker Compose stack and Mosquitto (MQTT broker) config.
 
