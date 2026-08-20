@@ -47,7 +47,7 @@ services:
     container_name: fanoos-pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@fanoos.com
+      PGADMIN_DEFAULT_EMAIL: admin@fanoos.ir
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5050:80"
