@@ -64,7 +64,7 @@ The mobile experience is a PWA built into the same Angular app — no separate c
 
 The backend uses PostgreSQL as its primary datastore. Expected data owned here:
 
-- **Users** — accounts, credentials, roles.
+- **Users** — accounts, credentials, roles. User↔role assignment lives in the `user_roles` join table and is managed from the admin UI (`/users/access` split page: pick a user on the left, toggle their roles on the right) via `POST /api/user-roles/list|assign|remove` (handlers in `/fanoos/internal/app/userrole`); `auth.RequireResource` resolves a user's permissions through `user_roles → role_resources → resources`.
 - **Personal access tokens** — issued tokens, scopes, expiry, revocation state.
 - **Environments** — home/device layout definitions (rooms, devices, wiring/control relationships).
 - **Devices** — registered ESP32 devices, their identity, and which environment they belong to. Each device has both an internal integer `id` (used only for foreign keys/joins, e.g. `device_links`) and a database-generated `guid` (UUID, unique, immutable) — the `guid` is the external-facing identifier meant for addressing a device from outside the DB (a controller, and later firmware/MQTT), so that never leaks or depends on the sequential internal id.

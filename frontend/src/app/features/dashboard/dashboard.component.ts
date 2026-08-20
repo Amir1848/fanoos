@@ -1,12 +1,56 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { AuthorizeDirective } from '../../core/auth/authorize.directive';
 import { IconComponent } from '../../shared/icon/icon.component';
+
+interface DashboardTile {
+  label: string;
+  desc: string;
+  icon: string;
+  link: string;
+  color: string;
+  resource?: string;
+}
+
+const TILES: DashboardTile[] = [
+  {
+    label: 'کاربران',
+    desc: 'مدیریت کاربران سامانه، ایجاد و حذف',
+    icon: 'users',
+    link: '/users',
+    color: 'primary',
+    resource: 'users.view',
+  },
+  {
+    label: 'نقش‌های کاربران',
+    desc: 'انتخاب کاربر و مدیریت نقش‌های او',
+    icon: 'link',
+    link: '/users/access',
+    color: 'accent',
+    resource: 'user-roles.view',
+  },
+  {
+    label: 'نقش‌ها',
+    desc: 'تعریف و مدیریت نقش‌های کاربری',
+    icon: 'shield',
+    link: '/roles',
+    color: 'accent',
+    resource: 'roles.view',
+  },
+  {
+    label: 'محیط‌ها',
+    desc: 'تعریف خانه و چیدمان اتاق‌ها و دستگاه‌ها',
+    icon: 'home',
+    link: '/environments',
+    color: 'primary',
+  },
+];
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, IconComponent],
+  imports: [RouterLink, IconComponent, AuthorizeDirective],
   template: `
     <div class="page-header">
       <h2 class="page-title">
@@ -18,25 +62,17 @@ import { IconComponent } from '../../shared/icon/icon.component';
     </div>
 
     <div class="tiles">
-      <a class="tile card" routerLink="/users">
-        <div class="tile-icon users-icon">
-          <app-icon name="users" [size]="26" />
-        </div>
-        <div>
-          <div class="tile-title">کاربران</div>
-          <div class="tile-desc text-secondary">مدیریت کاربران سامانه، ایجاد و حذف</div>
-        </div>
-      </a>
-
-      <a class="tile card" routerLink="/roles">
-        <div class="tile-icon roles-icon">
-          <app-icon name="shield" [size]="26" />
-        </div>
-        <div>
-          <div class="tile-title">نقش‌ها</div>
-          <div class="tile-desc text-secondary">تعریف و مدیریت نقش‌های کاربری</div>
-        </div>
-      </a>
+      @for (tile of tiles; track tile.link) {
+        <a class="tile card" *appAuthorize="tile.resource ?? ''" [routerLink]="tile.link">
+          <div class="tile-icon" [class]="'tile-icon ' + tile.color">
+            <app-icon [name]="tile.icon" [size]="26" />
+          </div>
+          <div>
+            <div class="tile-title">{{ tile.label }}</div>
+            <div class="tile-desc text-secondary">{{ tile.desc }}</div>
+          </div>
+        </a>
+      }
     </div>
   `,
   styles: `
@@ -68,16 +104,16 @@ import { IconComponent } from '../../shared/icon/icon.component';
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-    }
 
-    .users-icon {
-      background: var(--primary-light);
-      color: var(--primary);
-    }
+      &.primary {
+        background: var(--primary-light);
+        color: var(--primary);
+      }
 
-    .roles-icon {
-      background: #e0f2f1;
-      color: var(--accent);
+      &.accent {
+        background: #e0f2f1;
+        color: var(--accent);
+      }
     }
 
     .tile-title {
@@ -93,4 +129,5 @@ import { IconComponent } from '../../shared/icon/icon.component';
 })
 export class DashboardComponent {
   readonly auth = inject(AuthService);
+  readonly tiles = TILES;
 }

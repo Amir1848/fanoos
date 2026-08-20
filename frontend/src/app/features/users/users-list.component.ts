@@ -5,13 +5,14 @@ import { apiErrorMessage } from '../../core/api/api-error';
 import { UserListItem } from '../../core/api/models';
 import { ConfirmService } from '../../shared/confirm/confirm.service';
 import { ToastService } from '../../shared/toast/toast.service';
+import { AuthorizeDirective } from '../../core/auth/authorize.directive';
 import { ColumnDef, DataTableComponent, TableRow } from '../../shared/table/data-table.component';
 import { IconComponent } from '../../shared/icon/icon.component';
 
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  imports: [DataTableComponent, IconComponent],
+  imports: [DataTableComponent, IconComponent, AuthorizeDirective],
   templateUrl: './users-list.component.html',
 })
 export class UsersListComponent {
@@ -79,6 +80,10 @@ export class UsersListComponent {
 
   newUser(): void {
     this.router.navigate(['/users/new']);
+  }
+
+  manageRoles(): void {
+    this.router.navigate(['/users/access']);
   }
 
   async deleteSelected(): Promise<void> {

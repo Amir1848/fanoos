@@ -14,6 +14,7 @@
           class="nav-item"
           [routerLink]="item.link"
           routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
           [title]="collapsed() ? item.label : ''"
         >
           <app-icon [name]="item.icon" [size]="20" />

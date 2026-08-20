@@ -11,6 +11,7 @@ import (
 	"github.com/amir1848/fanoos/internal/app/role"
 	"github.com/amir1848/fanoos/internal/app/roleresource"
 	"github.com/amir1848/fanoos/internal/app/users"
+	"github.com/amir1848/fanoos/internal/app/userrole"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,6 +26,7 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	role.RegisterRoutes(protected)
 	roleresource.RegisterRoutes(protected)
 	users.RegisterRoutes(protected)
+	userrole.RegisterRoutes(protected)
 	environment.RegisterRoutes(protected)
 	device.RegisterRoutes(protected)
 	devicelink.RegisterRoutes(protected)

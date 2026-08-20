@@ -11,18 +11,22 @@ export const RESOURCE_LABELS: Record<string, string> = {
   'roles.update': 'ویرایش نقش',
   'roles.delete': 'حذف نقش',
   'roles.view': 'مشاهده نقش‌ها',
+  'user-roles.view': 'مشاهده نقش‌های کاربران',
+  'user-roles.assign': 'تخصیص نقش به کاربر',
 };
 
 /** Persian labels for the group prefix of a resource key (e.g. "users" in "users.create"). */
 export const RESOURCE_GROUP_LABELS: Record<string, string> = {
   users: 'کاربران',
   roles: 'نقش‌ها',
+  'user-roles': 'نقش‌های کاربران',
 };
 
 /** app-icon name for a group prefix; falls back to a generic lock icon. */
 export const RESOURCE_GROUP_ICONS: Record<string, string> = {
   users: 'users',
   roles: 'shield',
+  'user-roles': 'link',
 };
 
 export function resourceLabel(resourceKey: string): string {

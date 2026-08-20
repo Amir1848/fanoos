@@ -7,6 +7,10 @@
     <button type="button" class="btn btn-ghost" (click)="load()" [disabled]="loading()" title="بازخوانی">
       <app-icon name="refresh" [size]="17" />
     </button>
+    <button type="button" class="btn btn-outline" (click)="manageRoles()" *appAuthorize="'user-roles.view'">
+      <app-icon name="shield" [size]="16" />
+      نقش‌های کاربران
+    </button>
     <button
       type="button"
       class="btn btn-danger"

@@ -1,0 +1,97 @@
+<div class="page-header">
+  <h2 class="page-title">
+    نقش‌های کاربران
+    <span class="page-subtitle">انتخاب کاربر و سپس مدیریت نقش‌های او</span>
+  </h2>
+  <div class="page-actions">
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="save()"
+      [disabled]="!dirty() || saving()"
+    >
+      @if (saving()) {
+        <span class="spinner"></span>
+      } @else {
+        <app-icon name="save" [size]="16" />
+      }
+      ذخیره
+    </button>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="card form-state">
+    <span class="spinner spinner-dark"></span>
+    در حال بارگذاری…
+  </div>
+} @else {
+  <div class="split">
+    <!-- Left panel: users -->
+    <div class="card panel users-panel">
+      <div class="panel-header">
+        <app-icon name="users" [size]="18" />
+        <span class="panel-title">کاربران</span>
+        <span class="panel-count">{{ users().length }}</span>
+      </div>
+      <div class="panel-body">
+        @for (user of users(); track user.id) {
+          <button
+            type="button"
+            class="user-row"
+            [class.selected]="selectedUser()?.id === user.id"
+            (click)="selectUser(user)"
+          >
+            <span class="user-text">
+              <span class="user-name">{{ fullName(user) || user.userName }}</span>
+              <span class="user-username ltr">{{ user.userName }}</span>
+            </span>
+            @if (user.isAdmin) {
+              <span class="admin-badge">مدیر</span>
+            }
+          </button>
+        } @empty {
+          <div class="empty-state">کاربری ثبت نشده است</div>
+        }
+      </div>
+    </div>
+
+    <!-- Right panel: roles -->
+    <div class="card panel roles-panel">
+      <div class="panel-header">
+        <app-icon name="shield" [size]="18" />
+        <span class="panel-title">نقش‌ها</span>
+        @if (selectedUser(); as u) {
+          <span class="panel-subtitle">{{ fullName(u) || u.userName }}</span>
+          <span class="panel-count">{{ selectedCount() }}/{{ roles().length }}</span>
+        }
+      </div>
+      <div class="panel-body">
+        @if (!selectedUser()) {
+          <div class="empty-state">برای مدیریت نقش‌ها، ابتدا یک کاربر از پنل کنار انتخاب کنید</div>
+        } @else if (rolesLoading()) {
+          <div class="empty-state">
+            <span class="spinner spinner-dark"></span>
+            در حال دریافت نقش‌های کاربر…
+          </div>
+        } @else {
+          @for (role of roles(); track role.id) {
+            <label class="role-row" [class.checked]="isChecked(role.id)">
+              <input
+                type="checkbox"
+                [checked]="isChecked(role.id)"
+                (change)="toggle(role.id, $any($event.target).checked)"
+              />
+              <span class="role-text">
+                <span class="role-title">{{ role.title }}</span>
+                <span class="role-code ltr">{{ role.code }}</span>
+              </span>
+            </label>
+          } @empty {
+            <div class="empty-state">نقشی تعریف نشده است</div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+}

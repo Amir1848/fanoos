@@ -30,6 +30,7 @@ export class ShellComponent {
   readonly navItems: NavItem[] = [
     { label: 'داشبورد', icon: 'dashboard', link: '/dashboard' },
     { label: 'کاربران', icon: 'users', link: '/users', resource: 'users.view' },
+    { label: 'نقش‌های کاربران', icon: 'link', link: '/users/access', resource: 'user-roles.view' },
     { label: 'نقش‌ها', icon: 'shield', link: '/roles', resource: 'roles.view' },
     { label: 'محیط‌ها', icon: 'home', link: '/environments' },
   ];

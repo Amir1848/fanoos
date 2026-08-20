@@ -42,6 +42,11 @@ export const routes: Routes = [
           import('./features/users/users-list.component').then((m) => m.UsersListComponent),
       },
       {
+        path: 'users/access',
+        loadComponent: () =>
+          import('./features/users/user-roles.component').then((m) => m.UserRolesComponent),
+      },
+      {
         path: 'users/new',
         loadComponent: () =>
           import('./features/users/user-form.component').then((m) => m.UserFormComponent),
