@@ -6,6 +6,7 @@ import { RoleResourcesService } from '../../core/api/role-resources.service';
 import { apiErrorMessage } from '../../core/api/api-error';
 import { ResourceItem, RoleListItem } from '../../core/api/models';
 import { resourceGroupIcon, resourceGroupLabel, resourceLabel } from '../../core/api/resource-labels';
+import { AuthorizeDirective } from '../../core/auth/authorize.directive';
 import { ToastService } from '../../shared/toast/toast.service';
 import { IconComponent } from '../../shared/icon/icon.component';
 
@@ -17,7 +18,7 @@ interface ResourceGroup {
 @Component({
   selector: 'app-role-access',
   standalone: true,
-  imports: [IconComponent],
+  imports: [IconComponent, AuthorizeDirective],
   templateUrl: './role-access.component.html',
   styleUrl: './role-access.component.scss',
 })

@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { RolesService } from '../../core/api/roles.service';
 import { apiErrorMessage } from '../../core/api/api-error';
 import { RoleListItem } from '../../core/api/models';
+import { AuthService } from '../../core/auth/auth.service';
 import { ConfirmService } from '../../shared/confirm/confirm.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { ColumnDef, DataTableComponent, TableRow } from '../../shared/table/data-table.component';
@@ -19,6 +20,14 @@ export class RolesListComponent {
   private readonly router = inject(Router);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);
+
+  // The per-row lock button opens the role-access page; hidden without the
+  // resource (reads the resources signal, so it re-evaluates once loaded).
+  readonly auth = inject(AuthService);
+
+  get canManageAccess(): boolean {
+    return this.auth.hasResource('role-resources.view');
+  }
 
   readonly columns: ColumnDef[] = [
     { key: 'title', header: 'عنوان نقش' },

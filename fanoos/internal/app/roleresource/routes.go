@@ -3,15 +3,16 @@ package roleresource
 import (
 	"net/http"
 
+	"github.com/amir1848/fanoos/internal/app/auth"
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterRoutes(router *gin.RouterGroup) {
 	g := router.Group("/role-resources")
 
-	g.POST("/assign", assignResources)
-	g.POST("/remove", removeResources)
-	g.POST("/list", getRoleResources)
+	g.POST("/assign", auth.RequireResource(ResourceAssign), assignResources)
+	g.POST("/remove", auth.RequireResource(ResourceAssign), removeResources)
+	g.POST("/list", auth.RequireResource(ResourceView), getRoleResources)
 }
 
 func assignResources(ctx *gin.Context) {

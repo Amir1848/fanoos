@@ -14,6 +14,7 @@ func RegisterDataviews(r *gin.RouterGroup) {
 		ResourceKey string `json:"resourceKey"`
 	}, struct{}]{
 		DataviewKey: "all-resources",
+		ResourceKey: ResourceView,
 		Query: func(ctx context.Context, db *gorm.DB, _ *struct{}) (*gorm.DB, error) {
 			return db.Table("resources").Select("*"), nil
 		},

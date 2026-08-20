@@ -11,7 +11,13 @@
       بازگشت
     </button>
     @if (!notFound() && !loading()) {
-      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!dirty() || saving()">
+      <button
+        type="button"
+        class="btn btn-primary"
+        *appAuthorize="'role-resources.assign'"
+        (click)="save()"
+        [disabled]="!dirty() || saving()"
+      >
         @if (saving()) {
           <span class="spinner"></span>
         } @else {
