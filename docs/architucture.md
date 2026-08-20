@@ -1,21 +1,22 @@
-# Marketino — System Architecture
+# Fanoos — System Architecture
 
 > Audience: this document is a reference for AI coding agents (and humans) working across this repository. Keep it accurate, unambiguous, and structured. Update it whenever a component, protocol, or repo location changes.
 
 ## 1. Project Summary
 
-Marketino is a home automation platform. Users define a home's electrical/device layout ("environment"), the backend compiles that layout into firmware for a cheap microcontroller (ESP32), and the microcontroller executes it in the field, communicating back to the backend over MQTT.
+Fanoos is a home automation platform. Users define a home's electrical/device layout ("environment"), the backend compiles that layout into firmware for a cheap microcontroller (ESP32), and the microcontroller executes it in the field, communicating back to the backend over MQTT.
 
 ## 2. Components
 
 | Component | Responsibility | Language / Stack | Repo Location | Status |
 |---|---|---|---|---|
-| Backend server | User management, personal access tokens, environment/home-architecture definitions, ESP32 program generation, MQTT API, serves the built frontend | Go | `/marketino` | Active |
+| Backend server | User management, personal access tokens, environment/home-architecture definitions, ESP32 program generation, MQTT API, serves the built frontend | Go | `/fanoos` | Active |
 | Frontend application | UI for managing users, environments, and home architecture; talks to the backend server; also hosts the mobile PWA (see below) | Angular | `/new-angular-project` | Active |
 | MQTT broker | Message bus between the backend and ESP32 devices | Eclipse Mosquitto (Docker image) | — | Planned |
 | ESP32 firmware | Executes the compiled home-architecture program on-device; publishes/subscribes to MQTT topics | C/C++ (Arduino) | `/firmware/controller` | Active |
 | PostgreSQL database | Persistent storage for the backend server | PostgreSQL | — | Active — see §5 |
 | Assistant LLM | Chat/assistant text backend: relays user conversation to an OpenAI-compatible LLM API (device tool-calling planned) | External API (OpenAI-compatible, default DeepSeek via reverse proxy) | — | Active (text chat) — see §9 |
+| Whisper STT sidecar | Speech-to-text for assistant voice input (whisper.cpp `whisper-server`) | Docker image `ghcr.nju.edu.cn/ggml-org/whisper.cpp:main` (NJU mirror of `ghcr.io/ggml-org/whisper.cpp:main` — runflare/arvan mirrors don't proxy ghcr.io) | — | Active — see §9 |
 
 ## 3. Data Flow
 
@@ -39,12 +40,12 @@ flowchart LR
 
 The mobile experience is a PWA built into the same Angular app — no separate codebase:
 
-- Routes: `/m` (home), `/m/chat` (assistant chat), and `/m/login`, components in `/new-angular-project/src/app/features/mobile`, dark RTL design per `docs/mobile-app-mockup.html`. Scope: login, environment picker, light-circuit toggles (optimistic UI, commands via `POST /api/devices/command/light`, state reconciled by polling `/api/devices/:id/state/light` every 3 s while visible), sensor cards once the backend supports sensor devices, and an assistant chat page (`/m/chat`, opened via the 💬 header button) that streams replies from `POST /api/assistant/chat` (SSE), renders executed device commands (`{"action": …}` events) as inline chips, and keeps the conversation in `localStorage` (`marketino.mobile.chat`, last 100 messages).
+- Routes: `/m` (home), `/m/chat` (assistant chat), and `/m/login`, components in `/new-angular-project/src/app/features/mobile`, dark RTL design per `docs/mobile-app-mockup.html`. Scope: login, environment picker, light-circuit toggles (optimistic UI, commands via `POST /api/devices/command/light`, state reconciled by polling `/api/devices/:id/state/light` every 3 s while visible), sensor cards once the backend supports sensor devices, and an assistant chat page (`/m/chat`, opened via the 💬 header button) that streams replies from `POST /api/assistant/chat` (SSE), renders executed device commands (`{"action": …}` events) as inline chips, and keeps the conversation in `localStorage` (`fanoos.mobile.chat`, last 100 messages). The chat page also has a push-to-talk mic button: it records audio, converts it to 16 kHz mono WAV in the browser (`src/app/core/audio/wav.ts`), sends it to `POST /api/assistant/transcribe`, and fills the editable draft with the transcript (never auto-sends) — see §9.
 - Auth is shared with the admin panel (same JWT in `localStorage`); the 401 interceptor logs out to the matching area's login (`/m/login` vs `/login`).
 - PWA files live in `/new-angular-project/public`: `manifest.webmanifest` (fa/rtl, `start_url: /m`), PNG icons, and a **hand-written service worker** `sw.js` (registered in `src/main.ts` in production builds only — `@angular/service-worker` was not installable because the npm registry was unreachable). Caching strategy: navigations network-first with offline fallback to the cached shell; hashed static assets cache-first; `GET /api/devices/:id/state/*` network-first with a 3 s timeout falling back to the last cached response; everything else (POSTs) network-only.
-- Serving requirements: HTTPS (or localhost), `sw.js` at the origin root (it is), and `.webmanifest` with a JSON MIME type (registered explicitly in `marketino/cmd/web/main.go`).
+- Serving requirements: HTTPS (or localhost), `sw.js` at the origin root (it is), and `.webmanifest` with a JSON MIME type (registered explicitly in `fanoos/cmd/web/main.go`).
 
-## 4. Backend Server (`/marketino`)
+## 4. Backend Server (`/fanoos`)
 
 - Written in Go.
 - Responsibilities:
@@ -52,10 +53,11 @@ The mobile experience is a PWA built into the same Angular app — no separate c
   - Personal access token issuance and validation (used for API auth and, later, device auth).
   - CRUD for "environments" — a home's electrical/device layout (e.g., light locations, switches, desired control behavior).
   - Compiling an environment definition into an executable ESP32 program.
-  - MQTT client/API for communicating with ESP32 devices through the broker. The client lives in `/marketino/utils/mqttutils`, connects on process startup (auto-reconnecting, non-fatal if the broker is briefly unavailable), and is used by domain packages like `device` to publish commands. `POST /api/devices/command/light` (body: `{deviceId, on}`) looks up the device's environment/GUID/type and publishes `{"on":bool}` to its `cmd` topic. The client also subscribes to every device's `state` topic (`home/+/device/+/state`); each message is persisted to the `device_states` table (keyed by device GUID) via a handler the `device` package registers with `mqttutils.SetStateHandler`, rather than being cached in memory — this keeps state readable/consistent no matter which backend instance handles a given request (running multiple instances still needs a unique `MQTT_CLIENT_ID` per instance, which is not yet solved). `GET /api/devices/:id/state/light` reads that table for a given device (`{on, online, ts, known}`, where `known` is false until a `device_states` row exists for it). `GET /api/devices/:id/state/controller` is the analogous read for a controller — same table, but returns `{online, ts, known}` only, since controllers have no `on` concept (`is_on` is meaningless for them and intentionally omitted).
+  - MQTT client/API for communicating with ESP32 devices through the broker. The client lives in `/fanoos/utils/mqttutils`, connects on process startup (auto-reconnecting, non-fatal if the broker is briefly unavailable), and is used by domain packages like `device` to publish commands. `POST /api/devices/command/light` (body: `{deviceId, on}`) looks up the device's environment/GUID/type and publishes `{"on":bool}` to its `cmd` topic. The client also subscribes to every device's `state` topic (`home/+/device/+/state`); each message is persisted to the `device_states` table (keyed by device GUID) via a handler the `device` package registers with `mqttutils.SetStateHandler`, rather than being cached in memory — this keeps state readable/consistent no matter which backend instance handles a given request (running multiple instances still needs a unique `MQTT_CLIENT_ID` per instance, which is not yet solved). `GET /api/devices/:id/state/light` reads that table for a given device (`{on, online, ts, known}`, where `known` is false until a `device_states` row exists for it). `GET /api/devices/:id/state/controller` is the analogous read for a controller — same table, but returns `{online, ts, known}` only, since controllers have no `on` concept (`is_on` is meaningless for them and intentionally omitted).
   - Firmware source generation: `GET /api/devices/:id/firmware` returns `{ino, readme}` for a controller device (the environment editor's "get source code" action). The `internal/app/firmware` package renders two embedded Go `text/template`s (`templates/controller.ino.tmpl`, `templates/README.md.tmpl`) over the controller's linked toggle circuits — the same sketch shape as `/firmware/controller/controller.ino`, with identity/GUIDs baked in from the database and per-circuit GPIOs allocated from a fixed, deterministic pin plan (circuit 1 on the built-in LED, GPIO 2; one output+button pair per circuit; controller button on GPIO 4; max 8 circuits). WiFi/broker settings are placeholders the installer edits in a marked `USER CONFIGURATION` block. The README documents the wiring plan (pins, buttons, relay polarity, power) and how to reorder circuits/remap pins in the generated `CIRCUITS[]` table.
   - Serves the built Angular frontend as static assets (single deployable artifact).
-  - AI assistant (chat + device tools): `POST /api/assistant/chat` (JWT-protected, body `{messages: [{role, content}]}`) — handler and device tool wiring in `/marketino/internal/app/assistant/tools`, provider loop in `/marketino/internal/app/assistant`. The backend prepends a system prompt containing the user's light inventory, declares `turn_light`/`get_light_state` tools, relays the conversation to an **OpenAI-compatible** `/chat/completions` endpoint with `stream: true`, executes the model's tool calls through the existing device services, and pipes everything back as Server-Sent Events: `data: {"delta": "…"}` per text chunk, `data: {"action": {…}}` per executed tool, optional `data: {"error": "…"}`, final `data: [DONE]` (≤5 tool rounds per request). Config via env vars only: `ASSISTANT_BASE_URL`, `ASSISTANT_API_KEY` (required — endpoint returns 503 until set), `ASSISTANT_MODEL` (default `deepseek/deepseek-v4-pro`). Requests to the provider include `Authorization: Bearer <key>`; the key never reaches the frontend. See §9.
+  - AI assistant (chat + device tools): `POST /api/assistant/chat` (JWT-protected, body `{messages: [{role, content}]}`) — handler and device tool wiring in `/fanoos/internal/app/assistant/tools`, provider loop in `/fanoos/internal/app/assistant`. The backend prepends a system prompt containing the user's light inventory, declares `turn_light`/`get_light_state` tools, relays the conversation to an **OpenAI-compatible** `/chat/completions` endpoint with `stream: true`, executes the model's tool calls through the existing device services, and pipes everything back as Server-Sent Events: `data: {"delta": "…"}` per text chunk, `data: {"action": {…}}` per executed tool, optional `data: {"error": "…"}`, final `data: [DONE]` (≤5 tool rounds per request). Config via env vars only: `ASSISTANT_BASE_URL`, `ASSISTANT_API_KEY` (required — endpoint returns 503 until set), `ASSISTANT_MODEL` (default `deepseek/deepseek-v4-pro`). Requests to the provider include `Authorization: Bearer <key>`; the key never reaches the frontend. See §9.
+  - Assistant voice input (STT): `POST /api/assistant/transcribe` (JWT-protected, multipart `audio` field, ≤10 MB) in `/fanoos/internal/app/assistant/tools/transcribe.go` — forwards the audio to the whisper.cpp sidecar's `/inference` endpoint (OpenAI-style JSON response) and returns `{text}`. The whisper sidecar is reachable only from the backend/localhost, never exposed publicly. Config: `WHISPER_URL` (default `http://localhost:8080`). See §9.
 - Exposes a REST/HTTP API consumed by the Angular frontend.
 
 ## 5. Data Storage — PostgreSQL
@@ -69,23 +71,24 @@ The backend uses PostgreSQL as its primary datastore. Expected data owned here:
 - **Device state** — `device_states` table, one row per device that has reported over MQTT, keyed by device `guid`: last-known `is_on`, `online`, and report timestamp (`ts`).
 
 Conventions:
-- Schema migrations live under `/marketino/scripts/migrations`.
-- The backend connects to PostgreSQL using configuration in `/marketino/configs`.
+- Schema migrations live under `/fanoos/scripts/migrations`.
+- The backend connects to PostgreSQL using configuration in `/fanoos/configs`.
 - PostgreSQL runs as a service in the local Docker Compose stack (see §6) and as a managed/external instance in production.
 
 ## 6. Deployment — Docker Compose
 
 Local development and simple production deployments use Docker Compose to run the stack as a set of containers on a single host:
 
-- `backend` — the Go server (built from `/marketino`), serves the API and the compiled Angular frontend.
+- `backend` — the Go server (built from `/fanoos`), serves the API and the compiled Angular frontend.
 - `postgres` — PostgreSQL database, with a named volume for persistent data.
 - `mosquitto` — MQTT broker for backend↔ESP32 communication.
+- `whisper` — whisper.cpp `whisper-server` sidecar for assistant speech-to-text: on first start it downloads the multilingual `medium` model (~1.5 GB; `base` and `small` were tried first but their Persian accuracy was too poor) into the `whisper-models` volume from `hf-mirror.com` (huggingface.co is blocked on the dev machine), then serves `/inference` with language fixed to `fa`. No public port — bound to `127.0.0.1:8176` on the host only (8080/8081 are taken by other projects on the dev machine), so the backend can reach it during development; when the backend is containerized, set `WHISPER_URL=http://whisper:8080` instead and drop the port mapping. Memory-limited to 4 GB (`mem_limit`; the `medium` model is ~1.5 GB on disk and peaks above 2 GB resident). The model can be swapped further (e.g. quantized `medium-q5_0` to halve memory) by editing the `command:` in `/compose.yml`.
 
 Notes:
 - No Kubernetes is used for this project. The stack is small (single backend instance, single database, single broker) and does not need cluster orchestration.
 - `/compose.yml` (repo root) defines the stack. So far only `mosquitto` is wired up (config in `/mosquitto/config/mosquitto.conf`); `backend` and `postgres` services are still to be added.
-- Environment-specific configuration (DB credentials, MQTT broker address, token signing secrets) is injected via environment variables / `.env` files, not hardcoded. For local development, the backend also auto-loads a git-ignored `marketino/.env` at startup (`utils/envutils`, imported before the init-time env readers in `dbutils`/`mqttutils`); real environment variables always override file values.
-- Backend MQTT client config: `MQTT_BROKER_URL` (default `tcp://localhost:1883`), `MQTT_CLIENT_ID` (default `marketino-backend`). Assistant provider config: `ASSISTANT_BASE_URL`, `ASSISTANT_API_KEY`, `ASSISTANT_MODEL` (see §4).
+- Environment-specific configuration (DB credentials, MQTT broker address, token signing secrets) is injected via environment variables / `.env` files, not hardcoded. For local development, the backend also auto-loads a git-ignored `fanoos/.env` at startup (`utils/envutils`, imported before the init-time env readers in `dbutils`/`mqttutils`); real environment variables always override file values.
+- Backend MQTT client config: `MQTT_BROKER_URL` (default `tcp://localhost:1883`), `MQTT_CLIENT_ID` (default `fanoos-backend`). Assistant provider config: `ASSISTANT_BASE_URL`, `ASSISTANT_API_KEY`, `ASSISTANT_MODEL` (see §4). Whisper STT config: `WHISPER_URL` (default `http://localhost:8176`, the sidecar's host-mapped port; inside the compose network the sidecar listens on container port 8080).
 
 ## 7. ESP32 Firmware
 
@@ -94,7 +97,7 @@ Notes:
 - Communicates exclusively over MQTT with the broker — no direct connection to the backend or database.
 - One physical board opens one MQTT connection and plays two roles over it: the controller itself (reports momentary button presses on its own `state` topic with a Last Will that marks it offline) and every light circuit wired to it (each light has its own independent `cmd`/`state` topics under its own GUID). Local control (physical buttons, relay outputs) keeps working when the network is down — per project principle, manual operation always has priority.
 - Open item: device provisioning/authentication flow (how a device obtains its identity and initial config) is not yet defined — today the GUIDs/env ID are baked into `controller.ino` at flash time.
-- Until real hardware/firmware exists for a flow, `/marketino/cmd/simulator` still implements the device side of the MQTT contract below, so backend MQTT integration can be built and tested without ESP32 hardware. Run one process per simulated controller board: it reports its own `press` events (stdin `press`) and drives every light circuit wired to it via `device_links` (`link_type=1`) — applying `cmd` messages from the backend and reporting each circuit's state, plus stdin `<circuit-name> on|off` to simulate a manual toggle. Unlike real firmware, the simulator reads its circuits from Postgres at startup as a dev convenience (see `cmd/simulator/README.md`).
+- Until real hardware/firmware exists for a flow, `/fanoos/cmd/simulator` still implements the device side of the MQTT contract below, so backend MQTT integration can be built and tested without ESP32 hardware. Run one process per simulated controller board: it reports its own `press` events (stdin `press`) and drives every light circuit wired to it via `device_links` (`link_type=1`) — applying `cmd` messages from the backend and reporting each circuit's state, plus stdin `<circuit-name> on|off` to simulate a manual toggle. Unlike real firmware, the simulator reads its circuits from Postgres at startup as a dev convenience (see `cmd/simulator/README.md`).
 
 ## 8. MQTT Broker (Mosquitto)
 
@@ -112,16 +115,21 @@ Notes:
 
 ## 9. AI Assistant
 
-Natural-language layer, implemented in two phases. **Status: phases 1 (text chat) and 2 (tool-calling device control) implemented.**
+Natural-language layer, implemented in three phases. **Status: phases 1 (text chat), 2 (tool-calling device control), and 3 (push-to-talk voice input) implemented.**
 
 **Phase 1 — text chat:** the mobile PWA's chat page (`/m/chat`) sends the conversation to `POST /api/assistant/chat`; the backend relays it to an OpenAI-compatible provider (config above) and streams the reply back over SSE.
 
 **Phase 2 — tool-calling device control:** the backend injects the user's light inventory (compact JSON: id, name, environment, last reported on/online state from `device_states`) into the system prompt and declares two function tools — `turn_light(deviceId, on)` and `get_light_state(deviceId)`, both executing through the same service functions as the REST API (`device.SendLightCommand` / `device.GetLightState`). When the model requests tool calls, the backend executes each one immediately, emits an `{"action": {...}}` SSE event (with a ready-made Persian summary like `💡 چراغ آشپزخانه روشن شد`) that the chat UI renders as an inline chip, feeds the JSON result back to the model as `role:"tool"` messages, and streams the follow-up reply. The loop runs at most 5 rounds per request. Code layout: `internal/app/assistant` is the pure provider loop (streaming, tool-call fragment reassembly, message sanitizing — no DB imports, unit-tested with an httptest fake); `internal/app/assistant/tools` owns the HTTP endpoint, the inventory query, tool schemas, and the device executor.
 
+**Phase 3 — voice input (push-to-talk):** the chat page's 🎤 button records audio with `MediaRecorder` (max 60 s), converts it in-browser to 16 kHz mono WAV (`src/app/core/audio/wav.ts` — the browser's decoder handles webm/opus and mp4/aac, whisper gets a format it accepts natively), and uploads it to `POST /api/assistant/transcribe`. The backend forwards the file to the whisper.cpp sidecar (§6) and returns the transcript, which **fills the editable draft — it is never auto-sent**: a mis-heard device name must not toggle the wrong light, so the user always reviews the text before it enters the LLM pipeline (everything downstream is unchanged phase 1/2 text flow). STT runs server-side by design: the client only captures audio (a browser PWA can't run always-on wake-word listening anyway), the model (multilingual `medium`, language pinned to `fa`) lives in one place for all clients, and audio stays on the user's own server.
+
 ```mermaid
 flowchart LR
-    User[User] -->|text, later voice| PWA[Angular PWA]
+    User[User] -->|text or voice| PWA[Angular PWA]
     PWA -->|POST /api/assistant/chat| Backend[Go Backend]
+    PWA -->|POST /api/assistant/transcribe, WAV| Backend
+    Backend -->|multipart /inference| Whisper[whisper.cpp sidecar]
+    Whisper -->|text| Backend
     Backend -->|system prompt + inventory + tool schemas| LLM[OpenAI-compatible LLM — default DeepSeek via reverse proxy; local Ollama possible]
     LLM -->|streamed tool_calls, e.g. turn_light deviceId on| Backend
     Backend -->|executes via existing device services| MQTT[Existing device command/state flow]
@@ -137,7 +145,7 @@ Design decisions:
 - **Provider abstraction:** the wire format is OpenAI-compatible across providers, so config chooses cloud (default: DeepSeek through the `open-router-reverse` proxy) or local (Ollama, e.g. qwen2.5) — users who don't want their home layout in a third-party cloud can run fully local. Config via environment variables (`ASSISTANT_BASE_URL`, `ASSISTANT_API_KEY`, `ASSISTANT_MODEL`), never hardcoded.
 - **Latency:** stream the LLM reply to the frontend and execute each tool call as soon as it's parsed — don't wait for the full response text.
 - **Confirm/act pattern:** the LLM returns intent, the backend executes and reports the result ("Turned on kitchen light ✓"). This gate is in place for when irreversible device types (locks, heating) arrive.
-- **Voice later:** STT (Web Speech API in the PWA, or Whisper server-side) feeds the same text pipeline — nothing downstream changes.
+- **Voice input (phase 3):** push-to-talk STT runs server-side (whisper.cpp sidecar) — see above. The transcript always lands in the editable draft as a safety gate. Hands-free wake-word listening ("هی بازارینو") is a possible later step: browser PWAs cannot listen in the background, so it would need a native app wrapper or an opt-in foreground listening mode.
 
 ## 10. Open Questions / Not Yet Decided
 
@@ -146,5 +154,5 @@ Design decisions:
 - Backend-side mediation of `device_links` over MQTT (subscribing to controller state, publishing commands to linked lights) for the toggle link type.
 - Real-time state push to the frontend (likely WebSockets/SSE from the backend) — not yet specified.
 - `device_links` foreign keys still reference `devices.id` (internal), not `devices.guid` — fine for now since that table is backend-internal and never exposed over MQTT.
-- Assistant voice input: which STT path first (browser Web Speech API vs. server-side Whisper), and which languages to support (UI is fa/rtl today).
+- Assistant voice input: push-to-talk STT is implemented (§9 phase 3) with the multilingual `small` model; open items are whether `small`'s Persian accuracy is enough in practice (next tiers: `medium`, or `large-v3-turbo` if the host allows), and whether a wake-word/hands-free mode is worth adding (requires foreground listening or a native wrapper).
 - Assistant safety policy: what confirmation (if any) to require before executing commands that affect irreversible or safety-relevant device types once they exist (locks, heating).

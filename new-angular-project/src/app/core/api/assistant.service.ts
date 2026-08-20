@@ -11,6 +11,32 @@ export interface ChatStreamCallbacks {
 export class AssistantService {
   private readonly auth = inject(AuthService);
 
+  async transcribe(audio: Blob): Promise<string> {
+    const form = new FormData();
+    form.append('audio', audio, 'audio.wav');
+
+    const headers: Record<string, string> = {};
+    if (this.auth.token) {
+      headers['Authorization'] = `Bearer ${this.auth.token}`;
+    }
+
+    const res = await fetch('/api/assistant/transcribe', {
+      method: 'POST',
+      headers,
+      body: form,
+    });
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        this.auth.logout();
+      }
+      throw new Error(await readErrorMessage(res, 'خطا در تبدیل صدا به متن'));
+    }
+
+    const body = (await res.json()) as { text?: string };
+    return (body.text ?? '').trim();
+  }
+
   async streamChat(
     messages: ChatMessage[],
     callbacks: ChatStreamCallbacks,
@@ -32,7 +58,7 @@ export class AssistantService {
       if (res.status === 401) {
         this.auth.logout();
       }
-      throw new Error(await readErrorMessage(res));
+      throw new Error(await readErrorMessage(res, 'خطا در برقراری ارتباط با دستیار'));
     }
 
     if (!res.body) {
@@ -74,11 +100,11 @@ export class AssistantService {
   }
 }
 
-async function readErrorMessage(res: Response): Promise<string> {
+async function readErrorMessage(res: Response, fallback: string): Promise<string> {
   try {
     const body = (await res.json()) as { error?: string };
-    return body.error || 'خطا در برقراری ارتباط با دستیار';
+    return body.error || fallback;
   } catch {
-    return 'خطا در برقراری ارتباط با دستیار';
+    return fallback;
   }
 }

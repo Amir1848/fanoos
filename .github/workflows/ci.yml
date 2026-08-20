@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: marketino
+        working-directory: fanoos
 
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +20,7 @@ jobs:
         with:
           go-version: "1.22"
           cache: true
-          cache-dependency-path: marketino/go.sum
+          cache-dependency-path: fanoos/go.sum
 
       - name: Build
         run: go build ./...

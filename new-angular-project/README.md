@@ -1,4 +1,4 @@
-# Marketino Admin (new-ui)
+# Fanoos Admin (new-ui)
 
 پنل مدیریت مارکتینو — Angular 21، طراحی راست‌به‌چپ (فارسی).
 
@@ -9,7 +9,7 @@ npm install
 npm start        # serves on http://localhost:4201 (proxies /api → http://localhost:3000)
 ```
 
-The Go backend (`../marketino`) runs on `:3000` and reverse-proxies non-API routes
+The Go backend (`../fanoos`) runs on `:3000` and reverse-proxies non-API routes
 to this dev server on `:4201`, so either origin works during development.
 
 ## Structure

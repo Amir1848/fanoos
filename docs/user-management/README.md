@@ -1,6 +1,6 @@
 # User Management
 
-How authentication, authorization, users, roles, and permissions work in Marketino.
+How authentication, authorization, users, roles, and permissions work in Fanoos.
 
 ## Concepts
 

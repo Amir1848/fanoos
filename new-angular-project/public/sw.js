@@ -1,5 +1,5 @@
 /*
- * Marketino PWA service worker (hand-written — no build-time tooling).
+ * Fanoos PWA service worker (hand-written — no build-time tooling).
  *
  * Strategies:
  *  - navigations: network-first, fall back to cached index.html (offline shell).
@@ -9,7 +9,7 @@
  *    when the network is flaky.
  *  - everything else (POST commands, dataviews): network only.
  */
-const CACHE = 'marketino-v1';
+const CACHE = 'fanoos-v1';
 const STATE_TIMEOUT_MS = 3000;
 
 const STATE_API = /\/api\/devices\/\d+\/state\/(light|controller|sensor)$/;

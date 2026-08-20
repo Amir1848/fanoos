@@ -1,4 +1,4 @@
-# Agent Instructions — Marketino
+# Agent Instructions — Fanoos
 
 This file is the entry point for AI coding agents working in this repository.
 
@@ -13,12 +13,12 @@ The architecture doc describes what each part of the system does and where it li
 
 ## Repo Layout
 
-- `/marketino` — Go backend server.
+- `/fanoos` — Go backend server.
 - `/new-angular-project` — Angular frontend.
 - `/docs` — architecture and feature documentation.
 - `/compose.yml` + `/mosquitto` — Docker Compose stack and Mosquitto (MQTT broker) config.
 
 ## Ground Rules
 
-- Backend persistence goes through PostgreSQL; schema changes belong in `/marketino/scripts/migrations`.
+- Backend persistence goes through PostgreSQL; schema changes belong in `/fanoos/scripts/migrations`.
 - ESP32 devices communicate with the backend only via the MQTT broker, never directly.

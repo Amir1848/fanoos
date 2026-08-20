@@ -2,9 +2,11 @@ import { Component, DestroyRef, ElementRef, effect, inject, signal, viewChild } 
 import { Router } from '@angular/router';
 import { AssistantService } from '../../core/api/assistant.service';
 import { ChatAction, ChatMessage } from '../../core/api/models';
+import { audioBlobToWav } from '../../core/audio/wav';
 
-const CHAT_KEY = 'marketino.mobile.chat';
+const CHAT_KEY = 'fanoos.mobile.chat';
 const MAX_STORED_MESSAGES = 100;
+const MAX_RECORDING_MS = 60_000;
 
 @Component({
   selector: 'app-mobile-chat',
@@ -24,8 +26,13 @@ export class MobileChatComponent {
   readonly draft = signal('');
   readonly sending = signal(false);
   readonly error = signal('');
+  readonly recording = signal(false);
+  readonly transcribing = signal(false);
 
   private controller: AbortController | null = null;
+  private recorder: MediaRecorder | null = null;
+  private recordingStream: MediaStream | null = null;
+  private recordTimer: number | null = null;
 
   constructor() {
     effect(() => {
@@ -37,6 +44,7 @@ export class MobileChatComponent {
     });
     effect(() => this.persist(this.messages()));
     this.destroyRef.onDestroy(() => this.abortStream());
+    this.destroyRef.onDestroy(() => this.cleanupRecording());
   }
 
   back(): void {
@@ -100,6 +108,79 @@ export class MobileChatComponent {
     const last = this.messages().at(-1);
     if (last && last.role === 'assistant' && last.content.trim() === '' && !last.actions?.length) {
       this.messages.update((list) => list.slice(0, -1));
+    }
+  }
+
+  async toggleMic(): Promise<void> {
+    if (this.recording()) {
+      this.stopRecording();
+      return;
+    }
+    if (this.sending() || this.transcribing()) return;
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
+
+      recorder.ondataavailable = (event: BlobEvent) => {
+        if (event.data.size > 0) chunks.push(event.data);
+      };
+      recorder.onstop = () => this.finishRecording(chunks, stream);
+
+      this.recordingStream = stream;
+      this.recorder = recorder;
+      this.error.set('');
+      recorder.start();
+      this.recording.set(true);
+      this.recordTimer = window.setTimeout(() => this.stopRecording(), MAX_RECORDING_MS);
+    } catch (err) {
+      this.recordingStream?.getTracks().forEach((track) => track.stop());
+      this.recordingStream = null;
+      this.error.set(err instanceof DOMException && err.name === 'NotAllowedError'
+        ? 'دسترسی به میکروفون داده نشد'
+        : 'ضبط صدا ممکن نیست');
+    }
+  }
+
+  private stopRecording(): void {
+    if (this.recordTimer !== null) {
+      clearTimeout(this.recordTimer);
+      this.recordTimer = null;
+    }
+    this.recording.set(false);
+    this.recorder?.stop();
+    this.recorder = null;
+  }
+
+  private cleanupRecording(): void {
+    if (this.recordTimer !== null) {
+      clearTimeout(this.recordTimer);
+      this.recordTimer = null;
+    }
+    if (this.recorder) {
+      this.recorder.onstop = null;
+      this.recorder.stop();
+      this.recorder = null;
+    }
+    this.recordingStream?.getTracks().forEach((track) => track.stop());
+    this.recordingStream = null;
+  }
+
+  private async finishRecording(chunks: Blob[], stream: MediaStream): Promise<void> {
+    stream.getTracks().forEach((track) => track.stop());
+    this.recordingStream = null;
+    if (chunks.length === 0) return;
+
+    this.transcribing.set(true);
+    try {
+      const wav = await audioBlobToWav(new Blob(chunks));
+      const text = await this.assistant.transcribe(wav);
+      if (text) this.draft.set(text);
+    } catch (err) {
+      this.error.set(err instanceof Error && err.message ? err.message : 'خطا در تبدیل صدا به متن');
+    } finally {
+      this.transcribing.set(false);
     }
   }
 

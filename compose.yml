@@ -1,12 +1,12 @@
 services:
   postgres:
     image: docker.arvancloud.ir/postgres:16
-    container_name: marketino-postgres
+    container_name: fanoos-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: marketino
+      POSTGRES_DB: fanoos
     ports:
       - "5432:5432"
     volumes:
@@ -14,7 +14,7 @@ services:
 
   mosquitto:
     image: docker.arvancloud.ir/eclipse-mosquitto:2
-    container_name: marketino-mosquitto
+    container_name: fanoos-mosquitto
     restart: unless-stopped
     ports:
       - "1883:1883"
@@ -23,12 +23,31 @@ services:
       - mosquitto-data:/mosquitto/data
       - mosquitto-log:/mosquitto/log
 
+  whisper:
+    image: ghcr.nju.edu.cn/ggml-org/whisper.cpp:main
+    container_name: fanoos-whisper
+    restart: unless-stopped
+    command:
+      - -c
+      - |
+        if [ ! -s /models/ggml-medium.bin ]; then
+          curl -L --fail --retry 3 -o /models/ggml-medium.bin.part \
+            https://hf-mirror.com/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin
+          mv /models/ggml-medium.bin.part /models/ggml-medium.bin
+        fi
+        exec whisper-server --host 0.0.0.0 --port 8080 -m /models/ggml-medium.bin -l fa -t 4
+    ports:
+      - "127.0.0.1:8176:8080"
+    volumes:
+      - whisper-models:/models
+    mem_limit: 4g
+
   pgadmin:
     image: mirror-docker.runflare.com/dpage/pgadmin4:latest
-    container_name: marketino-pgadmin
+    container_name: fanoos-pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@marketino.com
+      PGADMIN_DEFAULT_EMAIL: admin@fanoos.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5050:80"
@@ -40,3 +59,4 @@ volumes:
   mosquitto-log:
   postgres-data:
   pgadmin-data:
+  whisper-models:

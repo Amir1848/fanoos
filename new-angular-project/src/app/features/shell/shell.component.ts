@@ -4,7 +4,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { ConfirmService } from '../../shared/confirm/confirm.service';
 import { IconComponent } from '../../shared/icon/icon.component';
 
-const SIDEBAR_KEY = 'marketino.sidebar-collapsed';
+const SIDEBAR_KEY = 'fanoos.sidebar-collapsed';
 
 interface NavItem {
   label: string;

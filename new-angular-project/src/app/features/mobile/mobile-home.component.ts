@@ -20,7 +20,7 @@ interface SensorVm {
   value: string | null;
 }
 
-const ENV_KEY = 'marketino.mobile.env';
+const ENV_KEY = 'fanoos.mobile.env';
 const POLL_MS = 3000;
 
 @Component({

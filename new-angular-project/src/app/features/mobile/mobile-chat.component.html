@@ -52,11 +52,26 @@
       [value]="draft()"
       (input)="updateDraft($any($event.target).value)"
       (keydown.enter)="send()"
-      placeholder="پیام خود را بنویسید…"
+      placeholder="{{ recording() ? 'در حال ضبط…' : 'پیام خود را بنویسید…' }}"
       [disabled]="sending()"
       autocomplete="off"
     />
-    @if (sending()) {
+    @if (recording()) {
+      <button class="mic-btn recording" type="button" (click)="toggleMic()">
+        <span class="mic-pulse"></span>
+        <span class="mic-stop">■</span>
+      </button>
+    } @else {
+      <button
+        class="mic-btn"
+        type="button"
+        (click)="toggleMic()"
+        [disabled]="transcribing() || sending()"
+      >🎤</button>
+    }
+    @if (transcribing()) {
+      <button class="send-btn" type="button" [disabled]="true"><span class="typing"><span></span><span></span><span></span></span></button>
+    } @else if (sending()) {
       <button class="send-btn stop" type="button" (click)="stop()">■</button>
     } @else {
       <button class="send-btn" type="button" (click)="send()" [disabled]="draft().trim() === ''">↑</button>

@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 
-const TOKEN_KEY = 'marketino.token';
+const TOKEN_KEY = 'fanoos.token';
 
 interface JwtPayload {
   username?: string;

@@ -1,5 +1,5 @@
 /*
- * Marketino ESP32 controller firmware.
+ * Fanoos ESP32 controller firmware.
  *
  * One board plays two roles over a single MQTT connection:
  *   - the controller itself (reports momentary button "press" events)
@@ -73,7 +73,7 @@ static const uint8_t CIRCUIT_COUNT = sizeof(CIRCUITS) / sizeof(CIRCUITS[0]);
 // Controller's own momentary button.
 static const uint8_t CONTROLLER_BUTTON_PIN = 4;
 
-static const char* WIFI_HOSTNAME = "marketino-controller";
+static const char* WIFI_HOSTNAME = "fanoos-controller";
 static const char* MQTT_CLIENT_ID = "esp32-e1095eea";
 
 static const uint32_t DEBOUNCE_MS        = 50;
@@ -289,7 +289,7 @@ static void connectWifi() {
 void setup() {
   Serial.begin(115200);
   delay(100);
-  Serial.println("\n[boot] marketino controller starting");
+  Serial.println("\n[boot] fanoos controller starting");
   Serial.printf("[boot] env=%s controller=%s circuits=%u\n",
                 ENVIRONMENT_ID, CONTROLLER_GUID, CIRCUIT_COUNT);
 
