@@ -30,17 +30,12 @@ services:
     command:
       - -c
       - |
-        if [ ! -s /models/ggml-medium.bin ]; then
-          curl -L --fail --retry 3 -o /models/ggml-medium.bin.part \
-            https://hf-mirror.com/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin
-          mv /models/ggml-medium.bin.part /models/ggml-medium.bin
-        fi
-        exec whisper-server --host 0.0.0.0 --port 8080 -m /models/ggml-medium.bin -l fa -t 4
+        exec whisper-server --host 0.0.0.0 --port 8080 -m /models/ggml-large-v3.bin -l fa -t 4
     ports:
       - "127.0.0.1:8176:8080"
     volumes:
-      - whisper-models:/models
-    mem_limit: 4g
+      - ./ggml-large-v3.bin:/models/ggml-large-v3.bin:ro
+    mem_limit: 8g
 
   pgadmin:
     image: mirror-docker.runflare.com/dpage/pgadmin4:latest
@@ -59,4 +54,3 @@ volumes:
   mosquitto-log:
   postgres-data:
   pgadmin-data:
-  whisper-models:

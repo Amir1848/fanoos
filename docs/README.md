@@ -146,6 +146,17 @@ Planned capabilities include:
 
 ---
 
+## Whisper Model File (one-time setup)
+
+The `whisper` service in `compose.yml` needs the `large-v3` model (~3 GB) as a local file `ggml-large-v3.bin` in the repo root (git-ignored, never committed). On a fresh machine, download it once:
+
+* Official: <https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3.bin>
+* Mirror (if huggingface.co is blocked): <https://hf-mirror.com/ggerganov/whisper.cpp/resolve/main/ggml-large-v3.bin>
+
+Then place it next to `compose.yml` before running `docker compose up`. Requires ~6–8 GB free RAM (the container is `mem_limit: 8g`); to switch back to the lower-RAM `medium` fallback, point the mount and `-m` flag in `compose.yml` at `ggml-medium.bin`.
+
+---
+
 ## Project Status
 
 🚧 Early Development
