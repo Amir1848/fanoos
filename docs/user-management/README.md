@@ -54,8 +54,9 @@ All under `/api`, JSON in/out, via `internal/app/{users,role,roleresource}`:
 
 | Endpoint | Purpose |
 |---|---|
-| `POST /users/create` | Create a user (password is hashed server-side before insert) |
-| `POST /users/delete` | Delete users by id |
+| `POST /users/create` | Create a user (password is hashed server-side before insert) — requires `users.create` |
+| `POST /users/update` | Update a user (empty password keeps the current one) — requires `users.update` |
+| `POST /users/delete` | Delete users by id — requires `users.delete` |
 | `POST /roles/create` | Create a role (`title`, `code`) |
 | `POST /roles/delete` | Delete roles by id |
 | `POST /role-resources/assign` | Grant a role a set of resources |
@@ -64,7 +65,7 @@ All under `/api`, JSON in/out, via `internal/app/{users,role,roleresource}`:
 | `POST /personal-access-tokens/create` | Create a PAT for the current user |
 | `POST /personal-access-tokens/delete` | Revoke PATs owned by the current user |
 | `POST /personal-access-tokens/list` | List the current user's PATs (never returns the raw token) |
-| `POST /dataviews/all-users` \| `all-roles` \| `all-resources` | Paginated listing (see `internal/app/dataviews`) |
+| `POST /dataviews/all-users` \| `all-roles` \| `all-resources` | Paginated listing (see `internal/app/dataviews`; `all-users` requires `users.view`) |
 
 Note: assigning a user to a role happens by inserting directly into `user_roles` — there is currently no dedicated `/user-roles` endpoint; roles are attached via SQL/migrations (see the `admin` user seeded in migration `000007`, which relies on `is_admin` rather than a role).
 
