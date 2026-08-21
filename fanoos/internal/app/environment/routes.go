@@ -3,11 +3,13 @@ package environment
 import (
 	"net/http"
 
+	"github.com/amir1848/fanoos/internal/app/auth"
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterRoutes(router *gin.RouterGroup) {
 	g := router.Group("/environments")
+	g.Use(auth.RequireResource(ResourceManage))
 
 	g.POST("/create", createEnvironment)
 	g.POST("/update", updateEnvironment)

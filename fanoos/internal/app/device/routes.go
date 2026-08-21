@@ -4,11 +4,14 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/amir1848/fanoos/internal/app/auth"
+	"github.com/amir1848/fanoos/internal/app/environment"
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterRoutes(router *gin.RouterGroup) {
 	g := router.Group("/devices")
+	g.Use(auth.RequireResource(environment.ResourceManage))
 
 	g.POST("/create", createDevice)
 	g.POST("/update", updateDevice)

@@ -49,7 +49,9 @@ export class UserFormComponent implements OnInit {
     }
 
     this.isNew.set(false);
-    this.form.disable();
+    this.form.controls.password.clearValidators();
+    this.form.controls.password.setValidators([Validators.minLength(6)]);
+    this.form.controls.password.updateValueAndValidity();
 
     const fromState = (history.state as { user?: UserListItem }).user;
     if (fromState && fromState.id === +idParam) {
@@ -99,29 +101,42 @@ export class UserFormComponent implements OnInit {
     }
 
     const value = this.form.getRawValue();
+    const password = this.isNew() || value.password ? value.password : '';
 
     this.saving.set(true);
-    this.usersService
-      .create({
-        id: 0,
-        userName: value.userName.trim(),
-        firstName: value.firstName.trim(),
-        lastName: value.lastName.trim(),
-        email: value.email.trim(),
-        phoneNumber: value.phoneNumber.trim(),
-        password: value.password,
-        isAdmin: value.isAdmin,
-      })
-      .subscribe({
-        next: () => {
-          this.toast.success('کاربر با موفقیت ایجاد شد');
-          this.router.navigate(['/users']);
-        },
-        error: (err) => {
-          this.saving.set(false);
-          this.toast.error(apiErrorMessage(err, 'خطا در ذخیره کاربر'));
-        },
-      });
+
+    const request = this.isNew()
+      ? this.usersService.create({
+          id: 0,
+          userName: value.userName.trim(),
+          firstName: value.firstName.trim(),
+          lastName: value.lastName.trim(),
+          email: value.email.trim(),
+          phoneNumber: value.phoneNumber.trim(),
+          password: value.password,
+          isAdmin: value.isAdmin,
+        })
+      : this.usersService.update({
+          id: this.user()?.id ?? 0,
+          userName: value.userName.trim(),
+          firstName: value.firstName.trim(),
+          lastName: value.lastName.trim(),
+          email: value.email.trim(),
+          phoneNumber: value.phoneNumber.trim(),
+          password,
+          isAdmin: value.isAdmin,
+        });
+
+    request.subscribe({
+      next: () => {
+        this.toast.success(this.isNew() ? 'کاربر با موفقیت ایجاد شد' : 'کاربر با موفقیت ویرایش شد');
+        this.router.navigate(['/users']);
+      },
+      error: (err) => {
+        this.saving.set(false);
+        this.toast.error(apiErrorMessage(err, 'خطا در ذخیره کاربر'));
+      },
+    });
   }
 
   async deleteUser(): Promise<void> {

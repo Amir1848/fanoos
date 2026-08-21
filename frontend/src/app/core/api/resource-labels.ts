@@ -5,6 +5,7 @@
  */
 export const RESOURCE_LABELS: Record<string, string> = {
   'users.create': 'ایجاد کاربر',
+  'users.update': 'ویرایش کاربر',
   'users.delete': 'حذف کاربر',
   'users.view': 'مشاهده کاربران',
   'roles.create': 'ایجاد نقش',
@@ -15,6 +16,7 @@ export const RESOURCE_LABELS: Record<string, string> = {
   'user-roles.assign': 'تخصیص نقش به کاربر',
   'role-resources.view': 'مشاهده دسترسی‌های نقش',
   'role-resources.assign': 'تخصیص دسترسی به نقش',
+  'environments.manage': 'مدیریت محیط‌ها (ایجاد/ویرایش محیط، دستگاه‌ها، اتصالات و فرمان چراغ‌ها)',
 };
 
 /** Persian labels for the group prefix of a resource key (e.g. "users" in "users.create"). */
@@ -23,6 +25,7 @@ export const RESOURCE_GROUP_LABELS: Record<string, string> = {
   roles: 'نقش‌ها',
   'user-roles': 'نقش‌های کاربران',
   'role-resources': 'دسترسی‌های نقش',
+  environments: 'محیط‌ها',
 };
 
 /** app-icon name for a group prefix; falls back to a generic lock icon. */
@@ -31,6 +34,7 @@ export const RESOURCE_GROUP_ICONS: Record<string, string> = {
   roles: 'shield',
   'user-roles': 'link',
   'role-resources': 'lock',
+  environments: 'home',
 };
 
 export function resourceLabel(resourceKey: string): string {

@@ -21,6 +21,10 @@ export class UsersService {
     return this.http.post<{ id: number }>('/api/users/create', user);
   }
 
+  update(user: UserSave): Observable<{ id: number }> {
+    return this.http.post<{ id: number }>('/api/users/update', user);
+  }
+
   delete(ids: number[]): Observable<void> {
     return this.http.post<void>('/api/users/delete', { ids });
   }

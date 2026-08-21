@@ -3,11 +3,14 @@ package devicelink
 import (
 	"net/http"
 
+	"github.com/amir1848/fanoos/internal/app/auth"
+	"github.com/amir1848/fanoos/internal/app/environment"
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterRoutes(router *gin.RouterGroup) {
 	g := router.Group("/device-links")
+	g.Use(auth.RequireResource(environment.ResourceManage))
 
 	g.POST("/create", createDeviceLink)
 	g.POST("/delete", deleteDeviceLinks)

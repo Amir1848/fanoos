@@ -43,6 +43,32 @@ func CreateUser(ctx context.Context, user *User) (int64, error) {
 	return userID, nil
 }
 
+func UpdateUser(ctx context.Context, user *User) error {
+	return dbutils.Transaction(func(tx *gorm.DB) error {
+		password := ""
+		if user.Password != "" {
+			hashed, err := HashPassword(user.Password)
+			if err != nil {
+				return err
+			}
+			password = hashed
+		}
+
+		return tx.Exec(`
+			UPDATE users
+			SET user_name = ?, first_name = ?, last_name = ?, full_name = ?,
+			    email = ?, phone_number = ?, is_admin = ?,
+			    password_c = COALESCE(NULLIF(?, ''), password_c),
+			    updated_at = NOW()
+			WHERE id = ?
+		`,
+			user.UserName, user.FirstName, user.LastName, user.FullName,
+			user.Email, user.PhoneNumber, user.IsAdmin,
+			password, user.ID,
+		).Error
+	})
+}
+
 func DeleteUser(ctx context.Context, ids []int64) error {
 	err := dbutils.Transaction(func(tx *gorm.DB) error {
 		err := tx.Exec(`DELETE FROM users WHERE id IN (?)`, ids).Error

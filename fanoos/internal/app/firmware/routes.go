@@ -4,13 +4,15 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/amir1848/fanoos/internal/app/auth"
+	"github.com/amir1848/fanoos/internal/app/environment"
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterRoutes(router *gin.RouterGroup) {
 	g := router.Group("/devices")
 
-	g.GET("/:id/firmware", getFirmware)
+	g.GET("/:id/firmware", auth.RequireResource(environment.ResourceManage), getFirmware)
 }
 
 // getFirmware serves the generated Arduino source + README for a controller

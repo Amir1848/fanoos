@@ -19,6 +19,7 @@ func RegisterDataviews(r *gin.RouterGroup) {
 		IsAdmin     bool   `json:"isAdmin"`
 	}, struct{}]{
 		DataviewKey: "all-users",
+		ResourceKey: ResourceView,
 		Query: func(ctx context.Context, db *gorm.DB, _ *struct{}) (*gorm.DB, error) {
 			return db.Table("users").Select("*"), nil
 		},

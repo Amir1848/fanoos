@@ -4,7 +4,7 @@
       کاربر جدید
       <span class="page-subtitle">ایجاد حساب کاربری در سامانه</span>
     } @else {
-      مشاهده کاربر
+      ویرایش کاربر
       @if (user(); as u) {
         <span class="page-subtitle">{{ u.firstName }} {{ u.lastName }}</span>
       }
@@ -21,16 +21,14 @@
         حذف کاربر
       </button>
     }
-    @if (isNew()) {
-      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
-        @if (saving()) {
-          <span class="spinner"></span>
-        } @else {
-          <app-icon name="save" [size]="16" />
-        }
-        ذخیره
-      </button>
-    }
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
+      @if (saving()) {
+        <span class="spinner"></span>
+      } @else {
+        <app-icon name="save" [size]="16" />
+      }
+      ذخیره
+    </button>
   </div>
 </div>
 
@@ -122,34 +120,38 @@
         <div class="field-error"></div>
       </div>
 
-      @if (isNew()) {
-        <div class="form-field">
-          <label for="password">رمز عبور<span class="req">*</span></label>
-          <div class="password-wrap">
-            <input
-              id="password"
-              [type]="showPassword() ? 'text' : 'password'"
-              class="control ltr"
-              formControlName="password"
-              [class.invalid]="invalid('password')"
-              autocomplete="new-password"
-            />
-            <button
-              type="button"
-              class="toggle-password"
-              (click)="showPassword.set(!showPassword())"
-              [attr.aria-label]="showPassword() ? 'پنهان کردن رمز' : 'نمایش رمز'"
-            >
-              <app-icon [name]="showPassword() ? 'eye-off' : 'eye'" [size]="16" />
-            </button>
-          </div>
-          <div class="field-error">
-            @if (invalid('password')) {
-              رمز عبور الزامی است (حداقل ۶ نویسه)
-            }
-          </div>
+      <div class="form-field">
+        <label for="password">رمز عبور@if (isNew()) {<span class="req">*</span>}</label>
+        <div class="password-wrap">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            class="control ltr"
+            formControlName="password"
+            [class.invalid]="invalid('password')"
+            autocomplete="new-password"
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            (click)="showPassword.set(!showPassword())"
+            [attr.aria-label]="showPassword() ? 'پنهان کردن رمز' : 'نمایش رمز'"
+          >
+            <app-icon [name]="showPassword() ? 'eye-off' : 'eye'" [size]="16" />
+          </button>
         </div>
-      }
+        <div class="field-error">
+          @if (invalid('password')) {
+            @if (isNew()) {
+              رمز عبور الزامی است (حداقل ۶ نویسه)
+            } @else {
+              رمز عبور باید حداقل ۶ نویسه باشد
+            }
+          } @else if (!isNew()) {
+            خالی بگذارید تا رمز فعلی حفظ شود
+          }
+        </div>
+      </div>
     </div>
 
     <div class="form-footer">
