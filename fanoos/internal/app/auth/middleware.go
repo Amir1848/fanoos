@@ -15,31 +15,39 @@ type resolvedUser struct {
 	UserName string
 }
 
-func resolveUser(tokenString string) (*resolvedUser, error) {
-	claims, err := ValidateToken(tokenString)
-	if err == nil {
-		db := dbutils.GetDB()
-
-		var userID int64
-		err := db.Raw(`SELECT id FROM users WHERE user_name = ?`, claims.Username).Scan(&userID).Error
+// resolveUser authenticates a request either by the session cookie set at
+// login or by a personal access token in the Authorization header (used
+// for API/script access). Session cookies take precedence.
+func resolveUser(c *gin.Context) (*resolvedUser, error) {
+	if rawToken, err := c.Cookie(sessionCookieName); err == nil && rawToken != "" {
+		userID, err := ValidateSession(rawToken)
 		if err != nil {
 			return nil, err
 		}
-
-		return &resolvedUser{UserID: userID, UserName: claims.Username}, nil
+		return userByID(userID)
 	}
 
-	userID, err := patoken.ValidateToken(context.Background(), tokenString)
-	if err != nil {
-		return nil, err
+	authHeader := c.GetHeader("Authorization")
+	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+	if tokenString != "" {
+		userID, err := patoken.ValidateToken(context.Background(), tokenString)
+		if err != nil {
+			return nil, err
+		}
+		return userByID(userID)
 	}
 
-	db := dbutils.GetDB()
+	return nil, errInvalidSession
+}
 
+func userByID(userID int64) (*resolvedUser, error) {
 	var username string
-	err = db.Raw(`SELECT user_name FROM users WHERE id = ?`, userID).Scan(&username).Error
+	err := dbutils.GetDB().Raw(`SELECT user_name FROM users WHERE id = ?`, userID).Scan(&username).Error
 	if err != nil {
 		return nil, err
+	}
+	if username == "" {
+		return nil, errInvalidSession
 	}
 
 	return &resolvedUser{UserID: userID, UserName: username}, nil
@@ -50,19 +58,14 @@ func setUserContext(c *gin.Context, user *resolvedUser) {
 	c.Set("userId", user.UserID)
 }
 
-func JWTMiddleware() gin.HandlerFunc {
+// AuthMiddleware authenticates every request in a protected group via the
+// session cookie or a Bearer personal access token, and stores the
+// resolved user in the context ("userId"/"username").
+func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization token required"})
-			c.Abort()
-			return
-		}
-
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		user, err := resolveUser(tokenString)
+		user, err := resolveUser(c)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired session"})
 			c.Abort()
 			return
 		}
@@ -72,24 +75,19 @@ func JWTMiddleware() gin.HandlerFunc {
 	}
 }
 
+// RequireResource guards a route behind a resource key. It expects
+// AuthMiddleware to have run (protected groups apply it globally) and only
+// re-checks the permission.
 func RequireResource(resourceKey string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization token required"})
+		userID, ok := c.Get("userId")
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization required"})
 			c.Abort()
 			return
 		}
 
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		user, err := resolveUser(tokenString)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
-			c.Abort()
-			return
-		}
-
-		authorized, err := userHasResource(user.UserID, resourceKey)
+		authorized, err := userHasResource(userID.(int64), resourceKey)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Authorization check failed"})
 			c.Abort()
@@ -102,7 +100,6 @@ func RequireResource(resourceKey string) gin.HandlerFunc {
 			return
 		}
 
-		setUserContext(c, user)
 		c.Next()
 	}
 }

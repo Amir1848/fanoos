@@ -19,7 +19,7 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	auth.RegisterRoutes(r)
 
 	protected := r.Group("")
-	protected.Use(auth.JWTMiddleware())
+	protected.Use(auth.AuthMiddleware())
 
 	patoken.RegisterRoutes(protected)
 	auth.RegisterProtectedRoutes(protected)
@@ -36,7 +36,7 @@ func RegisterRoutes(r *gin.RouterGroup) {
 
 func RegisterDataviews(r *gin.RouterGroup) {
 	protected := r.Group("")
-	protected.Use(auth.JWTMiddleware())
+	protected.Use(auth.AuthMiddleware())
 
 	role.RegisterDataviews(protected)
 	roleresource.RegisterDataviews(protected)

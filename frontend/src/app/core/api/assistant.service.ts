@@ -10,19 +10,14 @@ export interface ChatStreamCallbacks {
 @Injectable({ providedIn: 'root' })
 export class AssistantService {
   private readonly auth = inject(AuthService);
-
   async transcribe(audio: Blob): Promise<string> {
     const form = new FormData();
     form.append('audio', audio, 'audio.wav');
 
-    const headers: Record<string, string> = {};
-    if (this.auth.token) {
-      headers['Authorization'] = `Bearer ${this.auth.token}`;
-    }
-
+    // Auth comes from the HttpOnly session cookie (same-origin fetch sends
+    // it automatically).
     const res = await fetch('/api/assistant/transcribe', {
       method: 'POST',
-      headers,
       body: form,
     });
 
@@ -42,14 +37,9 @@ export class AssistantService {
     callbacks: ChatStreamCallbacks,
     signal?: AbortSignal,
   ): Promise<void> {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (this.auth.token) {
-      headers['Authorization'] = `Bearer ${this.auth.token}`;
-    }
-
     const res = await fetch('/api/assistant/chat', {
       method: 'POST',
-      headers,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages }),
       signal,
     });

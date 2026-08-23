@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	// Loaded first (dependency order guarantees it initializes before this
@@ -33,7 +34,19 @@ func initDB() {
 	)
 
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info), // Enable SQL logs
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			logger.Config{
+				// DB_LOG_LEVEL: silent | error | warn (default) | info.
+				// Values are never logged (ParameterizedQueries) so
+				// passwords/hashes don't leak into stdout.
+				SlowThreshold:             200 * time.Millisecond,
+				LogLevel:                  logLevel(getEnv("DB_LOG_LEVEL", "warn")),
+				IgnoreRecordNotFoundError: true,
+				ParameterizedQueries:       true,
+				Colorful:                   true,
+			},
+		),
 	})
 
 	if err != nil {
@@ -81,4 +94,17 @@ func getEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func logLevel(name string) logger.LogLevel {
+	switch strings.ToLower(strings.TrimSpace(name)) {
+	case "silent":
+		return logger.Silent
+	case "error":
+		return logger.Error
+	case "info":
+		return logger.Info
+	default:
+		return logger.Warn
+	}
 }

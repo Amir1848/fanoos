@@ -6,25 +6,29 @@ import (
 	"github.com/amir1848/fanoos/utils/dbutils"
 )
 
-// UserResourceKeys returns every resource key the user has access to:
-// admins implicitly hold all resources, everyone else only the ones granted
-// through their roles.
-func UserResourceKeys(ctx context.Context, userID int64) ([]string, error) {
+// UserResourceKeys returns the username and every resource key the user
+// has access to: admins implicitly hold all resources, everyone else only
+// the ones granted through their roles.
+func UserResourceKeys(ctx context.Context, userID int64) (keys []string, username string, err error) {
 	db := dbutils.GetDB()
 
-	var isAdmin bool
-	err := db.Raw(`SELECT is_admin FROM users WHERE id = ?`, userID).Scan(&isAdmin).Error
+	var row struct {
+		UserName string
+		IsAdmin  bool
+	}
+	err = db.WithContext(ctx).Raw(`SELECT user_name, is_admin FROM users WHERE id = ?`, userID).Scan(&row).Error
 	if err != nil {
-		return nil, err
+		return nil, "", err
+	}
+	if row.UserName == "" {
+		return nil, "", errInvalidSession
 	}
 
-	if isAdmin {
-		var keys []string
-		err := db.WithContext(ctx).Raw(`SELECT resource_key FROM resources ORDER BY id`).Scan(&keys).Error
-		return keys, err
+	if row.IsAdmin {
+		err = db.WithContext(ctx).Raw(`SELECT resource_key FROM resources ORDER BY id`).Scan(&keys).Error
+		return keys, row.UserName, err
 	}
 
-	var keys []string
 	err = db.WithContext(ctx).Raw(`
 		SELECT DISTINCT r.resource_key
 		FROM user_roles ur
@@ -34,8 +38,8 @@ func UserResourceKeys(ctx context.Context, userID int64) ([]string, error) {
 		ORDER BY r.resource_key
 	`, userID).Scan(&keys).Error
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	return keys, nil
+	return keys, row.UserName, nil
 }
