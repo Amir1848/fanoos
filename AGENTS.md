@@ -18,6 +18,10 @@ The architecture doc describes what each part of the system does and where it li
 - `/docs` — architecture and feature documentation.
 - `/compose.yml` + `/mosquitto` — Docker Compose stack and Mosquitto (MQTT broker) config.
 
+## Output Rules
+
+- Do NOT use fenced code blocks in replies; the user's terminal renders them broken (only the first word shows). Write commands and code as plain text lines instead.
+
 ## Ground Rules
 
 - Backend persistence goes through PostgreSQL; schema changes belong in `/fanoos/scripts/migrations`.

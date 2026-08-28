@@ -23,19 +23,19 @@ services:
       - mosquitto-data:/mosquitto/data
       - mosquitto-log:/mosquitto/log
 
-  whisper:
-    image: ghcr.nju.edu.cn/ggml-org/whisper.cpp:main
-    container_name: fanoos-whisper
-    restart: unless-stopped
-    command:
-      - -c
-      - |
-        exec whisper-server --host 0.0.0.0 --port 8080 -m /models/ggml-large-v3.bin -l fa -t 4
-    ports:
-      - "127.0.0.1:8176:8080"
-    volumes:
-      - ./ggml-large-v3.bin:/models/ggml-large-v3.bin:ro
-    mem_limit: 8g
+  # whisper:
+  #   image: ghcr.nju.edu.cn/ggml-org/whisper.cpp:main
+  #   container_name: fanoos-whisper
+  #   restart: unless-stopped
+  #   command:
+  #     - -c
+  #     - |
+  #       exec whisper-server --host 0.0.0.0 --port 8080 -m /models/ggml-large-v3.bin -l fa -t 4
+  #   ports:
+  #     - "127.0.0.1:8176:8080"
+  #   volumes:
+  #     - ./ggml-large-v3.bin:/models/ggml-large-v3.bin:ro
+  #   mem_limit: 8g
 
   pgadmin:
     image: mirror-docker.runflare.com/dpage/pgadmin4:latest
